@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { m } from "framer-motion";
 import toast from "react-hot-toast";
 import { ArrowLeft, ArrowRight, MapPin, Clock, Phone, Envelope, FacebookLogo, InstagramLogo, TiktokLogo, Leaf, Truck, Sparkle } from "phosphor-react";
-import Hero from "../components/hero.jsx";
+import Hero from "../components/Hero.jsx";
 import Marquee from "../components/Marquee.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import { SkeletonCategory, SkeletonGrid } from "../components/Skeleton.jsx";
