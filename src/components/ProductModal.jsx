@@ -111,20 +111,20 @@ export default function ProductModal() {
                 <X size={18} />
               </button>
             </div>
-            <div style={{ aspectRatio: "16/10", background: "var(--cream-2)", overflow: "hidden", margin: 14, borderRadius: 18, position: "relative", padding: 12 }}>
+                        <div style={{ position: "relative", aspectRatio: "16/10", background: "var(--cream-2)", overflow: "hidden" }}>
                 {activeProduct.images?.[0]?.url ? (
                   <>
                     <img
                       src={activeProduct.images[0].url}
                       alt={activeProduct.name}
                       onClick={() => setLightbox(activeProduct.images[0].url)}
-                      style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "zoom-in", borderRadius: 10 }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", cursor: "zoom-in", display: "block" }}
                     />
                     <span
                       style={{
                         position: "absolute",
-                        right: 24,
-                        bottom: 24,
+                        right: 16,
+                        bottom: 16,
                         width: 32,
                         height: 32,
                         borderRadius: "50%",

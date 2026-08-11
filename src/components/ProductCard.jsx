@@ -1,18 +1,15 @@
-import { Plus, MagnifyingGlassPlus } from "phosphor-react";
+import { Plus } from "phosphor-react";
 import { m } from "framer-motion";
-import { useState } from "react";
 import { formatPKR } from "../utils/format.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useUI } from "../context/UIContext.jsx";
-import ImageLightbox from "./ImageLightbox.jsx";
 import toast from "react-hot-toast";
 
 export default function ProductCard({ product, index = 0 }) {
   useCurrency();
   const { addItem } = useCart();
   const { openProduct } = useUI();
-  const [lightbox, setLightbox] = useState(null);
 
   const hasVariants = product.variants && product.variants.length > 0;
   const mainPrice = product.discountPrice || product.basePrice;
@@ -52,42 +49,18 @@ export default function ProductCard({ product, index = 0 }) {
       }}
       whileHover={{ y: -4 }}
     >
-      <div style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "var(--cream-2)", padding: 12 }}>
+      <div style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "var(--cream-2)" }}>
         {product.images?.[0]?.url ? (
           <img
             src={product.images[0].url}
             alt={product.name}
             loading="lazy"
-            onClick={(e) => {
-              e.stopPropagation();
-              setLightbox(product.images[0].url);
-            }}
-            style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "zoom-in", borderRadius: 8 }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
           />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-soft)" }}>
             No image
           </div>
-        )}
-        {product.images?.[0]?.url && (
-          <span
-            style={{
-              position: "absolute",
-              bottom: 62,
-              right: 10,
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: "rgba(33,23,17,0.55)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-            }}
-          >
-            <MagnifyingGlassPlus size={15} />
-          </span>
         )}
         {!product.isAvailable && (
           <div style={{ position: "absolute", inset: 0, background: "rgba(33,23,17,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -170,7 +143,6 @@ export default function ProductCard({ product, index = 0 }) {
           {hasVariants && <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>onwards</span>}
         </div>
       </div>
-      <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} />
     </m.article>
   );
 }
