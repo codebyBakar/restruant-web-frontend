@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+﻿import { useEffect, useState, useCallback } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { ShoppingBag, List, X } from "phosphor-react";
 import { useCart } from "../context/CartContext.jsx";
@@ -263,7 +263,7 @@ export default function Navbar() {
           .mobile-menu-btn { display: flex !important; }
           header .container { height: 96px !important; padding-top: 0px !important; padding-bottom: 8px !important; }
           .cart-label { display: none; }
-          .img-logo { height: 72px !important; margin: 10px 0 0 28px !important; }
+          .img-logo { height: 72px !important; margin: 10px 0 0 5px !important; }
           .mobile-menu-btn { margin-top: 10px !important; }
           header .nav-cart-btn { margin-top: 10px !important; }
         }
