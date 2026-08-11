@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
-import { X, Minus, Plus, Fire } from "phosphor-react";
+import { X, Minus, Plus, Fire, MagnifyingGlassPlus } from "phosphor-react";
 import toast from "react-hot-toast";
 import { useUI } from "../context/UIContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { formatPKR } from "../utils/format.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import { tagTone } from "../utils/color.js";
+import ImageLightbox from "./ImageLightbox.jsx";
 
 export default function ProductModal() {
   useCurrency();
@@ -15,6 +16,7 @@ export default function ProductModal() {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [instructions, setInstructions] = useState("");
+  const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
     if (activeProduct) {
@@ -109,9 +111,34 @@ export default function ProductModal() {
                 <X size={18} />
               </button>
             </div>
-            <div style={{ aspectRatio: "16/10", background: "var(--cream-2)", overflow: "hidden" }}>
+            <div style={{ aspectRatio: "16/10", background: "var(--cream-2)", overflow: "hidden", margin: 14, borderRadius: 18, position: "relative", padding: 12 }}>
                 {activeProduct.images?.[0]?.url ? (
-                  <img src={activeProduct.images[0].url} alt={activeProduct.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <>
+                    <img
+                      src={activeProduct.images[0].url}
+                      alt={activeProduct.name}
+                      onClick={() => setLightbox(activeProduct.images[0].url)}
+                      style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "zoom-in", borderRadius: 10 }}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        right: 24,
+                        bottom: 24,
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: "rgba(33,23,17,0.55)",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <MagnifyingGlassPlus size={16} />
+                    </span>
+                  </>
                 ) : null}
               </div>
 
@@ -284,6 +311,7 @@ export default function ProductModal() {
               </div>
             </div>
           </m.div>
+          <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} />
         </>
       )}
     </AnimatePresence>
