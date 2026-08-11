@@ -55,7 +55,7 @@ export default function ProductCard({ product, index = 0 }) {
             src={product.images[0].url}
             alt={product.name}
             loading="lazy"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+            style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
           />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-soft)" }}>
