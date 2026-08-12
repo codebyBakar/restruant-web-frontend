@@ -46,6 +46,21 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!logoUrl) return;
+    const id = "preload-nav-logo";
+    let link = document.getElementById(id);
+    if (!link) {
+      link = document.createElement("link");
+      link.id = id;
+      link.rel = "preload";
+      link.as = "image";
+      link.fetchPriority = "high";
+      document.head.appendChild(link);
+    }
+    link.href = logoUrl;
+  }, [logoUrl]);
+
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
@@ -75,7 +90,7 @@ export default function Navbar() {
           </button>
 
           <Link to="/" onClick={handleLogoClick} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <img className="img-logo" src={logoUrl} alt={siteName} style={{ height: 90, width: 'auto', marginTop: 5, marginLeft: -20 }} />
+            <img className="img-logo" src={logoUrl} alt={siteName} fetchPriority="high" decoding="async" style={{ height: 90, width: 'auto', marginTop: 5, marginLeft: -20 }} />
           </Link>
 
           <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 32, position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
@@ -194,15 +209,20 @@ export default function Navbar() {
           height: 100%;
           background: var(--cream);
           transform: translateY(100%);
-          transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear .35s;
           display: flex;
           flex-direction: column;
           align-items: center;
           padding: 100px 20px 40px;
           overflow: hidden;
+          visibility: hidden;
+          pointer-events: none;
         }
         .drawer.open {
           transform: translateY(0);
+          visibility: visible;
+          pointer-events: auto;
+          transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
         }
         .drawer__close-btn {
           position: fixed;
