@@ -112,6 +112,7 @@ function lerp(a, b, t) {
 
 export default function Hero() {
   const sectionRef = useRef(null)
+  const videoRef = useRef(null)
   const [progress, setProgress] = useState(0)
   const [loadProgress, setLoadProgress] = useState(0)
 
@@ -151,6 +152,18 @@ export default function Hero() {
     return () => cancelAnimationFrame(rafId)
   }, [])
 
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    const tryPlay = () => {
+      video.play().catch(() => {})
+    }
+    tryPlay()
+    const onLoaded = () => tryPlay()
+    video.addEventListener("loadeddata", onLoaded)
+    return () => video.removeEventListener("loadeddata", onLoaded)
+  }, [])
+
   const ep = easeInOut(progress)
   const entranceEp = easeInOut(loadProgress)
   const displayT = loadProgress < 1 ? (1 - entranceEp) : ep
@@ -171,7 +184,7 @@ export default function Hero() {
   return (
     <div className="hero-wrapper" style={{  minHeight: '100vh', background: 'var(--charcoal)' }}>
       {/* â”€â”€ Scroll-driven section â”€â”€ */}
-      <div ref={sectionRef} style={{ position: 'relative', height: isMobile ? '550vh' : '300vh' }}>
+      <div ref={sectionRef} style={{ position: 'relative', height: isMobile ? '380vh' : '300vh' }}>
         <div
           className="hero-sticky-container"
           style={{
@@ -373,17 +386,20 @@ export default function Hero() {
               }}
             >
               <video
+                ref={videoRef}
                 autoPlay
                 loop
                 muted
                 playsInline
+                preload="auto"
+                poster='none'
                 style={{
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
                 }}
               >
-                <source src="6221661-uhd_2160_3840_24fps.mp4" type="video/mp4" />
+                <source src="/6221661-uhd_2160_3840_24fps.mp4" type="video/mp4" />
               </video>
             </div>
 
