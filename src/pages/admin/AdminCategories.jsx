@@ -14,7 +14,7 @@ const emptyForm = { name: "", description: "", isActive: true };
 export default function AdminCategories() {
   const alert = useAdminAlert();
   const [categories, setCategories] = useState([]);
-  const [orderCounts, setOrderCounts] = useState({});
+  const [productCounts, setProductCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -28,10 +28,10 @@ export default function AdminCategories() {
   const load = () => {
     setLoading(true);
     setError(false);
-    Promise.all([api.get("/categories?all=true"), api.get("/categories/stats/orders")])
+    Promise.all([api.get("/categories?all=true"), api.get("/categories/stats/products")])
       .then(([cats, stats]) => {
         setCategories(cats.data.data);
-        setOrderCounts(Object.fromEntries(stats.data.data.map((s) => [s._id, s.orderCount])));
+        setProductCounts(Object.fromEntries(stats.data.data.map((s) => [s._id, s.productCount])));
       })
       .catch(() => {
         setError(true);
@@ -117,7 +117,7 @@ export default function AdminCategories() {
           <div className="admin-card" style={{ padding: 0, overflow: "auto" }}>
         <table className="admin-table">
           <thead>
-            <tr><th>Image</th><th>Name</th><th>Description</th><th>Orders</th><th>Status</th><th></th></tr>
+            <tr><th>Image</th><th>Name</th><th>Description</th><th>Products</th><th>Status</th><th></th></tr>
           </thead>
           <tbody>
             {loading ? (
@@ -137,7 +137,7 @@ export default function AdminCategories() {
                   <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{c.image?.url && <img src={c.image.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
                   <td style={{ fontWeight: 700 }}>{c.name}</td>
                   <td style={{ color: "var(--ink-soft)", maxWidth: 260 }}>{c.description}</td>
-                  <td>{orderCounts[c._id] ?? 0}</td>
+                  <td>{productCounts[c._id] ?? 0}</td>
                   <td><span className="admin-badge" style={{ background: c.isActive ? "rgba(75,123,91,0.15)" : "rgba(194,65,12,0.1)", color: c.isActive ? "var(--mint)" : "var(--paprika)" }}>{c.isActive ? "Active" : "Hidden"}</span></td>
                   <td>
                     <div style={{ display: "flex", gap: 6 }}>
