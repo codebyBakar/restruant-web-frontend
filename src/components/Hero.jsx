@@ -392,7 +392,6 @@ export default function Hero() {
                 muted
                 playsInline
                 preload="auto"
-                poster='none'
                 style={{
                   width: '100%',
                   height: '100%',
