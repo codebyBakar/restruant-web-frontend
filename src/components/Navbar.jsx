@@ -53,7 +53,6 @@ export default function Navbar() {
     if (!link) {
       link = document.createElement("link");
       link.id = id;
-      link.rel = "preload";
       link.as = "image";
       link.fetchPriority = "high";
       document.head.appendChild(link);
