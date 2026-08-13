@@ -24,6 +24,7 @@ export default function AdminCategories() {
   const [page, setPage] = useState(1);
   const [retryKey, setRetryKey] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [arranging, setArranging] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -131,6 +132,12 @@ export default function AdminCategories() {
                   <td><div className="skeleton" style={{ width: 56, height: 26, borderRadius: 8 }} /></td>
                 </tr>
               ))
+            ) : arranging ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center", padding: 24, color: "var(--ink-soft)" }}>
+                  Reordering categories...
+                </td>
+              </tr>
             ) : (
               (() => {
                 const ordered = [...categories].sort(
@@ -148,6 +155,7 @@ export default function AdminCategories() {
                         onChange={async (e) => {
                           const num = parseInt(e.target.value, 10);
                           if (isNaN(num) || num < 1) return;
+                          setArranging(true);
                           const ordered = [...categories].sort(
                             (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
                           );
@@ -156,8 +164,12 @@ export default function AdminCategories() {
                           try {
                             await api.put("/categories/reorder", { ids: rest.map((x) => x._id) });
                             toast.success("Category order updated");
-                            setTimeout(load, 300);
+                            setTimeout(() => {
+                              setArranging(false);
+                              load();
+                            }, 300);
                           } catch {
+                            setArranging(false);
                             toast.error("Failed to update order");
                           }
                         }}
