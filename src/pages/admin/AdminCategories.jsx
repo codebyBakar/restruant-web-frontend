@@ -21,9 +21,9 @@ export default function AdminCategories() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const imageFileRef = useRef(null);
-  const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [retryKey, setRetryKey] = useState(0);
+  const [saving, setSaving] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -117,13 +117,13 @@ export default function AdminCategories() {
           <div className="admin-card" style={{ padding: 0, overflow: "auto" }}>
         <table className="admin-table">
           <thead>
-            <tr><th>Image</th><th>Name</th><th>Description</th><th>Products</th><th>Status</th><th></th></tr>
+            <tr><th>#</th><th>Image</th><th>Name</th><th>Description</th><th>Products</th><th>Status</th><th></th></tr>
           </thead>
           <tbody>
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={`skel-row-${i}`}>
-                  <td><div className="skeleton" style={{ width: 42, height: 42, borderRadius: 8 }} /></td>
+                  <td><div className="skeleton" style={{ width: 30, height: 30, borderRadius: 8 }} /></td>
                   <td><div className="skeleton" style={{ height: 12, borderRadius: 4, width: "70%" }} /></td>
                   <td><div className="skeleton" style={{ height: 12, borderRadius: 4 }} /></td>
                   <td><div className="skeleton" style={{ height: 12, borderRadius: 4, width: "40%" }} /></td>
@@ -132,21 +132,56 @@ export default function AdminCategories() {
                 </tr>
               ))
             ) : (
-              pageItems.map((c) => (
-                <tr key={c._id}>
-                  <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{c.image?.url && <img src={c.image.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
-                  <td style={{ fontWeight: 700 }}>{c.name}</td>
-                  <td style={{ color: "var(--ink-soft)", maxWidth: 260 }}>{c.description}</td>
-                  <td>{productCounts[c._id] ?? 0}</td>
-                  <td><span className="admin-badge" style={{ background: c.isActive ? "rgba(75,123,91,0.15)" : "rgba(194,65,12,0.1)", color: c.isActive ? "var(--mint)" : "var(--paprika)" }}>{c.isActive ? "Active" : "Hidden"}</span></td>
-                  <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button className="icon-btn" onClick={() => openEdit(c)} aria-label="Edit"><Pencil size={15} /></button>
-                      <button className="icon-btn danger" onClick={() => handleDelete(c._id)} aria-label="Delete"><Trash size={15} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              (() => {
+                const ordered = [...categories].sort(
+                  (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+                );
+                return pageItems.map((c) => {
+                  const pos = ordered.findIndex((x) => x._id === c._id) + 1;
+                  return (
+                  <tr key={c._id}>
+                    <td>
+                      <select
+                        className="admin-input"
+                        style={{ width: 80, margin: "0 auto" }}
+                        value={pos}
+                        onChange={async (e) => {
+                          const num = parseInt(e.target.value, 10);
+                          if (isNaN(num) || num < 1) return;
+                          const ordered = [...categories].sort(
+                            (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+                          );
+                          const rest = ordered.filter((x) => x._id !== c._id);
+                          rest.splice(num - 1, 0, c);
+                          try {
+                            await api.put("/categories/reorder", { ids: rest.map((x) => x._id) });
+                            toast.success("Category order updated");
+                            setTimeout(load, 300);
+                          } catch {
+                            toast.error("Failed to update order");
+                          }
+                        }}
+                      >
+                        {[...Array(categories.length)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>{i + 1}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{c.image?.url && <img src={c.image.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
+                    <td style={{ fontWeight: 700 }}>{c.name}</td>
+                    <td style={{ color: "var(--ink-soft)", maxWidth: 260 }}>{c.description}</td>
+                    <td>{productCounts[c._id] ?? 0}</td>
+                    <td><span className="admin-badge" style={{ background: c.isActive ? "rgba(75,123,91,0.15)" : "rgba(194,65,12,0.1)", color: c.isActive ? "var(--mint)" : "var(--paprika)" }}>{c.isActive ? "Active" : "Hidden"}</span></td>
+                    <td>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="icon-btn" onClick={() => openEdit(c)} aria-label="Edit"><Pencil size={15} /></button>
+                        <button className="icon-btn danger" onClick={() => handleDelete(c._id)} aria-label="Delete"><Trash size={15} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                  );
+                });
+              })()
             )}
           </tbody>
         </table>
@@ -174,12 +209,14 @@ export default function AdminCategories() {
                 <option value="false">Hidden</option>
               </select>
             </div>
+            <div>
+              <label className="admin-label">Image</label>
+              <input type="file" accept="image/*" onChange={(e) => { imageFileRef.current = e.target.files[0]; }} className="admin-input" />
+            </div>
           </div>
           <div>
-            <label className="admin-label">Image</label>
-            <input type="file" accept="image/*" onChange={(e) => { imageFileRef.current = e.target.files[0]; }} className="admin-input" />
+            <button type="submit" className="btn btn-primary" disabled={saving} style={{ marginTop: 8 }}>{saving ? "Saving..." : "Save Category"}</button>
           </div>
-          <button type="submit" className="btn btn-primary" disabled={saving} style={{ marginTop: 8 }}>{saving ? "Saving..." : "Save Category"}</button>
         </form>
       </AdminModal>
     </div>
