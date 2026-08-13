@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Plus, Pencil, Trash, MagnifyingGlass, Star } from "phosphor-react";
+import { Plus, Pencil, Trash, MagnifyingGlass, Star, Funnel, X } from "phosphor-react";
 import api from "../../api/axios.js";
 import EmptyState from "../../components/EmptyState.jsx";
 import AdminModal from "../../components/admin/AdminModal.jsx";
@@ -38,6 +38,9 @@ export default function AdminProducts() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [draftFilters, setDraftFilters] = useState({ categories: [], isVeg: "all", sort: "" });
+  const [filters, setFilters] = useState({ categories: [], isVeg: "all", sort: "" });
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -47,8 +50,13 @@ export default function AdminProducts() {
   const load = () => {
     setLoading(true);
     setError(false);
+    const params = new URLSearchParams({ limit: "100", availableOnly: "false" });
+    if (search) params.set("search", search);
+    if (filters.categories.length) params.set("category", filters.categories.join(","));
+    if (filters.isVeg !== "all") params.set("isVeg", filters.isVeg);
+    if (filters.sort) params.set("sort", filters.sort);
     Promise.all([
-      api.get(`/products?limit=100&availableOnly=false${search ? `&search=${search}` : ""}`),
+      api.get(`/products?${params.toString()}`),
       api.get("/categories?all=true"),
       api.get("/tags"),
     ])
@@ -68,7 +76,7 @@ export default function AdminProducts() {
     setPage(1);
     const timeout = setTimeout(load, 300);
     return () => clearTimeout(timeout);
-  }, [search]);
+  }, [search, filters]);
 
   useEffect(() => {
     const pageCount = Math.ceil(products.length / PAGE_SIZE);
@@ -172,6 +180,26 @@ export default function AdminProducts() {
     }
   };
 
+  const toggleDraftCategory = (id) => {
+    setDraftFilters((f) => ({
+      ...f,
+      categories: f.categories.includes(id) ? f.categories.filter((c) => c !== id) : [...f.categories, id],
+    }));
+  };
+
+  const applyFilters = () => {
+    setFilters(draftFilters);
+    setFilterOpen(false);
+  };
+
+  const resetFilters = () => {
+    setDraftFilters({ categories: [], isVeg: "all", sort: "" });
+    setFilters({ categories: [], isVeg: "all", sort: "" });
+    setFilterOpen(false);
+  };
+
+  const activeFilterCount = (filters.categories.length > 0 ? 1 : 0) + (filters.isVeg !== "all" ? 1 : 0) + (filters.sort ? 1 : 0);
+
   const pageCount = Math.ceil(products.length / PAGE_SIZE);
   const safePage = Math.min(page, pageCount) || 1;
   const pageItems = products.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
@@ -183,15 +211,28 @@ export default function AdminProducts() {
         <button className="btn btn-primary btn-sm" onClick={openCreate}><Plus size={16} /> New Product</button>
       </div>
 
-      <div style={{ position: "relative", maxWidth: 320, marginBottom: 18 }}>
-        <MagnifyingGlass size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--ink-soft)" }} />
-        <input className="admin-input" style={{ paddingLeft: 36 }} placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 18, flexWrap: "wrap" }}>
+        <div style={{ position: "relative", maxWidth: 320, flex: 1, minWidth: 220 }}>
+          <MagnifyingGlass size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--ink-soft)" }} />
+          <input className="admin-input" style={{ paddingLeft: 36 }} placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <button type="button" className="btn btn-outline btn-sm" style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }} onClick={() => { setDraftFilters(filters); setFilterOpen(true); }}>
+          <Funnel size={15} /> Filters
+          {activeFilterCount > 0 && (
+            <span style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              minWidth: 18, height: 18, padding: "0 5px", borderRadius: 999,
+              fontSize: 11, fontWeight: 800, color: "#fff",
+              background: "var(--paprika)",
+            }}>{activeFilterCount}</span>
+          )}
+        </button>
       </div>
 
       {error ? (
         <EmptyState type="products" hasError onAction={load} style={{ marginBottom: 18 }} />
       ) : products.length === 0 && !loading ? (
-        <EmptyState type="products" subtitle="Start adding items to your menu — they'll show up here." style={{ marginBottom: 18 }} />
+        <EmptyState type="products" subtitle={search || activeFilterCount > 0 ? "No products match your search or filters. Try adjusting them." : "Start adding items to your menu — they'll show up here."} style={{ marginBottom: 18 }} />
       ) : (
         <>
           <div className="admin-card" style={{ padding: 0, overflow: "auto" }}>
@@ -237,6 +278,95 @@ export default function AdminProducts() {
       <Pagination page={safePage} pageCount={pageCount} onChange={setPage} />
         </>
       )}
+
+      <AdminModal open={filterOpen} onClose={() => setFilterOpen(false)} title="Filter Products" width={480}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div>
+            <label className="admin-label">Categories</label>
+            {categories.length === 0 ? (
+              <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>No categories found.</p>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {categories.map((c) => {
+                  const selected = draftFilters.categories.includes(c._id);
+                  return (
+                    <button
+                      type="button"
+                      key={c._id}
+                      onClick={() => toggleDraftCategory(c._id)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "7px 14px",
+                        borderRadius: 999,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        border: selected ? "1.5px solid var(--mint)" : "1.5px solid var(--line)",
+                        background: selected ? "rgba(75,120,101,0.12)" : "#fff",
+                        color: selected ? "var(--mint)" : "var(--ink-soft)",
+                        cursor: "pointer",
+                        transition: "all .15s ease",
+                      }}
+                    >
+                      {selected && <X size={12} weight="bold" />}
+                      {c.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="admin-label">Dietary</label>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {[
+                { value: "all", label: "All" },
+                { value: "true", label: "Vegetarian" },
+                { value: "false", label: "Non-Veg" },
+              ].map((opt) => (
+                <button
+                  type="button"
+                  key={opt.value}
+                  onClick={() => setDraftFilters((f) => ({ ...f, isVeg: opt.value }))}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 999,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    border: draftFilters.isVeg === opt.value ? "1.5px solid var(--mint)" : "1.5px solid var(--line)",
+                    background: draftFilters.isVeg === opt.value ? "rgba(75,120,101,0.12)" : "#fff",
+                    color: draftFilters.isVeg === opt.value ? "var(--mint)" : "var(--ink-soft)",
+                    cursor: "pointer",
+                    transition: "all .15s ease",
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="admin-label">Price</label>
+            <select
+              className="admin-input"
+              value={draftFilters.sort}
+              onChange={(e) => setDraftFilters((f) => ({ ...f, sort: e.target.value }))}
+            >
+              <option value="">Default</option>
+              <option value="priceHigh">Price: High to Low</option>
+              <option value="priceLow">Price: Low to High</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
+            <button type="button" className="btn btn-outline" onClick={resetFilters}>Reset</button>
+            <button type="button" className="btn btn-primary" onClick={applyFilters}>Apply Filters</button>
+          </div>
+        </div>
+      </AdminModal>
 
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Edit Product" : "New Product"} width={640}>
         <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
