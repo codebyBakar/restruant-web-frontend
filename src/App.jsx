@@ -13,6 +13,7 @@ import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import ProtectedRoute from "./components/admin/ProtectedRoute.jsx";
 import RequireCart from "./components/RequireCart.jsx";
 import RequireEmail from "./components/RequireEmail.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 
 const Menu = lazy(() => import("./pages/Menu.jsx"));
 const Deals = lazy(() => import("./pages/Deals.jsx"));
@@ -86,7 +87,9 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <AdminLayout />
+              <NotificationProvider>
+                <AdminLayout />
+              </NotificationProvider>
             </ProtectedRoute>
           }
         >

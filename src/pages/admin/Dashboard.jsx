@@ -4,11 +4,14 @@ import toast from "react-hot-toast";
 import { ShoppingCart, CurrencyDollar, Clock, TrendUp } from "phosphor-react";
 import api from "../../api/axios.js";
 import EmptyState from "../../components/EmptyState.jsx";
+import RelativeTime from "../../components/RelativeTime.jsx";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import { formatPKR } from "../../utils/format.js";
 import { useCurrency } from "../../hooks/useCurrency.js";
 
 export default function Dashboard() {
   useCurrency();
+  const { isOrderNew } = useNotification();
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +76,7 @@ export default function Dashboard() {
               <th>Customer</th>
               <th>Type</th>
               <th>Total</th>
+              <th>Placed</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -80,19 +84,26 @@ export default function Dashboard() {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={`skel-row-${i}`}>
-                  <td colSpan={5}><div className="skeleton" style={{ height: 14, borderRadius: 4 }} /></td>
+                  <td colSpan={6}><div className="skeleton" style={{ height: 14, borderRadius: 4 }} /></td>
                 </tr>
               ))
             ) : (
-              recentOrders.map((o) => (
-                <tr key={o._id}>
-                  <td><Link to={`/admin/orders/${o._id}`} style={{ fontWeight: 700, color: "var(--paprika)" }}>{o.orderNumber}</Link></td>
+              recentOrders.map((o) => {
+                const isNew = isOrderNew(o);
+                return (
+                <tr key={o._id} className={isNew ? "order-new-row" : ""}>
+                  <td>
+                    {isNew && <span className="order-new-dot" aria-hidden="true" />}
+                    <Link to={`/admin/orders/${o._id}`} style={{ fontWeight: 700, color: "var(--paprika)" }}>{o.orderNumber}</Link>
+                  </td>
                   <td>{o.customer.name}</td>
                   <td style={{ textTransform: "capitalize" }}>{o.orderType}</td>
                   <td style={{ fontWeight: 700 }}>{formatPKR(o.total)}</td>
+                  <td style={{ color: "var(--ink-soft)", fontSize: 12 }}><RelativeTime date={o.createdAt} /></td>
                   <td><span className="admin-badge" style={{ background: "var(--cream-2)" }}>{o.orderStatus.replace(/_/g, " ")}</span></td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>

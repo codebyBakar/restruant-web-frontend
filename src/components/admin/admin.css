@@ -43,15 +43,117 @@
   overflow-y: auto;
 }
 
-.admin-main {
+.admin-content {
   flex: 1;
   min-width: 0;
   margin-left: 240px;
-  padding: 32px 36px;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  
 }
-.admin-topbar { display: none; }
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 28px;
+  background: var(--cream);
+  color: var(--charcoal);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+.admin-topbar-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1; }
+.admin-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.admin-topbar-label { font-size: 11px; color: rgba(47,33,23,0.6); }
+
+.admin-hamburger { display: none; }
 .admin-close-btn { display: none; }
+
+/* Sidebar logo — absolutely positioned & centered in the header on desktop */
+@media (min-width: 900px) {
+  .admin-sidebar-head { position: relative; min-height: 76px; }
+  .admin-sidebar-logo {
+    position: absolute;
+    left: 45%;
+    top: 53%;
+    transform: translate(-50%, -50%);
+    height: 80px;
+    width: auto;
+    max-width: 180px;
+    object-fit: contain;
+    margin: 0;
+  }
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 36px;
+}
+
+/* Topbar icon buttons (bell, settings) */
+.admin-topbar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(47,33,23,0.18);
+  background: rgba(47,33,23,0.06);
+  color: var(--charcoal);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.admin-topbar-btn:hover { background: rgba(47,33,23,0.1); }
+.admin-bell-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--cream);
+  animation: bell-ping 2s ease-in-out infinite;
+}
+@keyframes bell-ping {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* New order highlight */
+.order-new-row td { animation: orderGlowPulse 2.4s ease-in-out infinite; }
+@keyframes orderGlowPulse {
+  0%, 100% { background-color: #fff4e9; }
+  50% { background-color: #ffe9d4; }
+}
+.order-new-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--paprika);
+  margin-right: 8px;
+  vertical-align: middle;
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+/* Responsive helpers */
+.admin-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.admin-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.admin-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 
 @media (max-width: 1024px) {
   .admin-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
@@ -63,23 +165,61 @@
   .admin-card { padding: 18px; }
   .admin-table { min-width: 620px; }
   .admin-modal-panel { padding: 20px !important; }
+  .admin-topbar { padding: 12px 14px; }
+  .admin-topbar-title { font-size: 17px; }
 }
 
 @media (max-width: 899px) {
-  .admin-shell { flex-direction: column; }
-  .admin-main { margin-left: 0; padding: 18px 14px 40px; }
+  .admin-content { margin-left: 0; }
+  .admin-main { padding: 18px 14px 40px; }
 
+  /* Mobile topbar: keep the previous charcoal look (desktop stays cream) */
   .admin-topbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
     background: var(--charcoal);
     color: var(--cream);
-    position: sticky;
-    top: 0;
-    z-index: 60;
+    border-bottom: 1px solid rgba(251,243,230,0.1);
   }
+  .admin-topbar-brand { color: var(--cream); }
+  .admin-topbar-brand > div:last-child { color: rgba(251,243,230,0.55) !important; }
+  .admin-topbar-label { color: rgba(251,243,230,0.6); }
+  .admin-topbar-btn {
+    border-color: rgba(251,243,230,0.2);
+    background: rgba(251,243,230,0.06);
+    color: var(--cream);
+  }
+  .admin-topbar-btn:hover { background: rgba(251,243,230,0.14); }
+  .admin-bell-badge { border-color: var(--charcoal); }
+
+  /* Center the brand (site name + Admin Panel) in the mobile topbar */
+  .admin-topbar-brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .admin-topbar-brand > div:first-child { font-size: 17px !important; }
+  .admin-topbar-brand > div:last-child { font-size: 10.5px !important; }
+
+  /* Mobile: keep the logo at the compact size */
+  .admin-sidebar-logo {
+    height: 46px;
+    max-width: 170px;
+  }
+
+  /* Center the brand (site name + Admin Panel) in the mobile sidebar header */
+  .admin-sidebar-head { position: relative; }
+  .admin-sidebar-brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+  }
+
   .admin-hamburger {
     display: inline-flex; align-items: center; justify-content: center;
     width: 38px; height: 38px; border-radius: 10px;

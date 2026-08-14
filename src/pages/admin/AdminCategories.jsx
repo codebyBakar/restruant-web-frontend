@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Plus, Pencil, Trash } from "phosphor-react";
+import { Plus, Pencil, Trash, X } from "phosphor-react";
 import api from "../../api/axios.js";
 import EmptyState from "../../components/EmptyState.jsx";
 import AdminModal from "../../components/admin/AdminModal.jsx";
@@ -25,6 +25,8 @@ export default function AdminCategories() {
   const [retryKey, setRetryKey] = useState(0);
   const [saving, setSaving] = useState(false);
   const [arranging, setArranging] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
 
   const load = () => {
     setLoading(true);
@@ -98,6 +100,72 @@ export default function AdminCategories() {
     }
   };
 
+  const enterSelectMode = () => {
+    setSelected(new Set());
+    setSelectMode(true);
+  };
+
+  const cancelSelect = () => {
+    setSelected(new Set());
+    setSelectMode(false);
+  };
+
+  const toggleSelect = (id) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const allOnPage = pageItems.length > 0 && pageItems.every((c) => next.has(c._id));
+      pageItems.forEach((c) => (allOnPage ? next.delete(c._id) : next.add(c._id)));
+      return next;
+    });
+  };
+
+  const handleDeleteAll = async () => {
+    const ok = await alert.confirm({
+      title: "Delete All Categories",
+      message: `This will permanently delete all ${categories.length} categories. Products will remain but lose their category link. This action cannot be undone.`,
+      confirmLabel: "Delete All",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      const { data } = await api.delete("/categories/bulk", { data: { all: true } });
+      toast.success(`Deleted ${data.deleted} categor${data.deleted === 1 ? "y" : "ies"}`);
+      setSelected(new Set());
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete categories");
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selected.size === 0) return;
+    const ok = await alert.confirm({
+      title: `Delete ${selected.size} Categories`,
+      message: "Delete the selected categories? Products will remain but lose their category link.",
+      confirmLabel: "Delete",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      const { data } = await api.delete("/categories/bulk", { data: { ids: [...selected] } });
+      toast.success(`Deleted ${data.deleted} categor${data.deleted === 1 ? "y" : "ies"}`);
+      setSelected(new Set());
+      setSelectMode(false);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete categories");
+    }
+  };
+
   const pageCount = Math.ceil(categories.length / PAGE_SIZE);
   const safePage = Math.min(page, pageCount) || 1;
   const pageItems = categories.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
@@ -106,7 +174,42 @@ export default function AdminCategories() {
     <div>
       <div className="admin-page-header">
         <h1 className="admin-title">Categories</h1>
-        <button className="btn btn-primary btn-sm" onClick={openCreate}><Plus size={16} /> New Category</button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button className="btn btn-primary btn-sm" onClick={openCreate}><Plus size={16} /> New Category</button>
+          {selectMode ? (
+            <>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--paprika)" }}>{selected.size} selected</span>
+              <button
+                className="btn btn-sm"
+                onClick={handleDeleteSelected}
+                disabled={selected.size === 0}
+                style={{ background: "#c0392b", color: "#fff" }}
+              >
+                <Trash size={15} /> Delete Selected{selected.size ? ` (${selected.size})` : ""}
+              </button>
+              <button className="btn btn-outline btn-sm" onClick={cancelSelect}><X size={15} /> Cancel</button>
+            </>
+          ) : (
+            <>
+              <button
+                className="btn btn-sm"
+                onClick={handleDeleteAll}
+                disabled={categories.length === 0}
+                style={{ border: "1.5px solid #c0392b", background: "#fff", color: "#c0392b" }}
+              >
+                <Trash size={15} /> Delete All
+              </button>
+              <button
+                className="btn btn-sm"
+                onClick={enterSelectMode}
+                disabled={categories.length === 0}
+                style={{ background: "#c0392b", color: "#fff" }}
+              >
+                <Trash size={15} /> Delete Selected
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {error ? (
@@ -118,7 +221,20 @@ export default function AdminCategories() {
           <div className="admin-card" style={{ padding: 0, overflow: "auto" }}>
         <table className="admin-table">
           <thead>
-            <tr><th>#</th><th>Image</th><th>Name</th><th>Description</th><th>Products</th><th>Status</th><th></th></tr>
+            <tr>
+              <th>#</th><th>Image</th><th>Name</th><th>Description</th><th>Products</th><th>Status</th>              <th>
+                {selectMode ? (
+                  <input
+                    type="checkbox"
+                    checked={pageItems.length > 0 && pageItems.every((c) => selected.has(c._id))}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all categories on page"
+                  />
+                ) : (
+                  "Actions"
+                )}
+              </th>
+            </tr>
           </thead>
           <tbody>
             {loading ? (
@@ -185,10 +301,19 @@ export default function AdminCategories() {
                     <td>{productCounts[c._id] ?? 0}</td>
                     <td><span className="admin-badge" style={{ background: c.isActive ? "rgba(75,123,91,0.15)" : "rgba(194,65,12,0.1)", color: c.isActive ? "var(--mint)" : "var(--paprika)" }}>{c.isActive ? "Active" : "Hidden"}</span></td>
                     <td>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button className="icon-btn" onClick={() => openEdit(c)} aria-label="Edit"><Pencil size={15} /></button>
-                        <button className="icon-btn danger" onClick={() => handleDelete(c._id)} aria-label="Delete"><Trash size={15} /></button>
-                      </div>
+                      {selectMode ? (
+                        <input
+                          type="checkbox"
+                          checked={selected.has(c._id)}
+                          onChange={() => toggleSelect(c._id)}
+                          aria-label={`Select ${c.name}`}
+                        />
+                      ) : (
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button className="icon-btn" onClick={() => openEdit(c)} aria-label="Edit"><Pencil size={15} /></button>
+                          <button className="icon-btn danger" onClick={() => handleDelete(c._id)} aria-label="Delete"><Trash size={15} /></button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                   );

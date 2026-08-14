@@ -41,7 +41,7 @@ export default function AdminSettings() {
   const [logoPreview, setLogoPreview] = useState(null);
   const [form, setForm] = useState({});
 
-  const [profileForm, setProfileForm] = useState({ email: "", currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [profileForm, setProfileForm] = useState({ name: "", email: "", currentPassword: "", newPassword: "", confirmPassword: "" });
   const [profileSaving, setProfileSaving] = useState(false);
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
 
@@ -86,7 +86,7 @@ export default function AdminSettings() {
   }, []);
 
   useEffect(() => {
-    setProfileForm((p) => ({ ...p, email: user?.email || "" }));
+    setProfileForm((p) => ({ ...p, name: user?.name || "", email: user?.email || "" }));
   }, [user]);
 
   useEffect(() => {
@@ -146,15 +146,15 @@ export default function AdminSettings() {
     const ok = await alert.confirm({
       title: "Confirm Profile Change",
       message: profileForm.newPassword
-        ? "You are about to change your admin email and/or password. Continue?"
-        : "You are about to change your admin email. Continue?",
+        ? "You are about to change your admin username, email and/or password. Continue?"
+        : "You are about to change your admin username and/or email. Continue?",
       confirmLabel: "Confirm",
       tone: "critical",
     });
     if (!ok) return;
     setProfileSaving(true);
     try {
-      const payload = { email: profileForm.email };
+      const payload = { name: profileForm.name, email: profileForm.email };
       if (profileForm.newPassword) {
         payload.currentPassword = profileForm.currentPassword;
         payload.newPassword = profileForm.newPassword;
@@ -396,8 +396,19 @@ export default function AdminSettings() {
       {tab === "profile" && (
         <div className="admin-card" style={{ maxWidth: 520 }}>
           <h3 style={{ fontSize: 16, marginBottom: 4 }}>Admin Profile</h3>
-          <p style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 0, marginBottom: 16 }}>Update your login email or change your password.</p>
+          <p style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 0, marginBottom: 16 }}>Update your username, login email or change your password.</p>
           <form onSubmit={saveProfile} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <label className="admin-label">Username</label>
+              <input
+                type="text"
+                required
+                className="admin-input"
+                placeholder="Admin name shown in the panel"
+                value={profileForm.name}
+                onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))}
+              />
+            </div>
             <div><label className="admin-label">Email</label><input type="email" required className="admin-input" value={profileForm.email} onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))} /></div>
             <div>
               <label className="admin-label">Current Password</label>

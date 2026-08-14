@@ -7,7 +7,9 @@ import { SkeletonDetail } from "../../components/Skeleton.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
 import ImageLightbox from "../../components/ImageLightbox.jsx";
 import ReceiptModal from "../../components/admin/ReceiptModal.jsx";
+import RelativeTime from "../../components/RelativeTime.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
+import { useNotification } from "../../context/NotificationContext.jsx";
 import { formatPKR } from "../../utils/format.js";
 import { useCurrency } from "../../hooks/useCurrency.js";
 
@@ -25,6 +27,7 @@ export default function AdminOrderDetail() {
   useCurrency();
   const { id } = useParams();
   const alert = useAdminAlert();
+  const { markOrderSeen } = useNotification();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -41,6 +44,11 @@ export default function AdminOrderDetail() {
     }).finally(() => setLoading(false));
   };
   useEffect(load, [id]);
+
+  // Opening an order marks it as seen (clears the "new" glow + unread badge).
+  useEffect(() => {
+    markOrderSeen(id);
+  }, [id, markOrderSeen]);
 
   const updateStatus = async (orderStatus) => {
     const ok = await alert.confirm({
@@ -120,6 +128,7 @@ export default function AdminOrderDetail() {
         <div style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 6 }}>
           <Clock size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />
           Placed {new Date(order.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+          <span style={{ color: "var(--paprika)", fontWeight: 700 }}> · <RelativeTime date={order.createdAt} /></span>
         </div>
         <div style={{ marginTop: 14 }}>
           <button

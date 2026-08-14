@@ -46,6 +46,8 @@ export default function AdminProducts() {
   const [form, setForm] = useState(emptyForm);
   const [imageFiles, setImageFiles] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
 
   const load = () => {
     setLoading(true);
@@ -180,6 +182,72 @@ export default function AdminProducts() {
     }
   };
 
+  const enterSelectMode = () => {
+    setSelected(new Set());
+    setSelectMode(true);
+  };
+
+  const cancelSelect = () => {
+    setSelected(new Set());
+    setSelectMode(false);
+  };
+
+  const toggleSelect = (id) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const allOnPage = pageItems.length > 0 && pageItems.every((p) => next.has(p._id));
+      pageItems.forEach((p) => (allOnPage ? next.delete(p._id) : next.add(p._id)));
+      return next;
+    });
+  };
+
+  const handleDeleteAll = async () => {
+    const ok = await alert.confirm({
+      title: "Delete All Products",
+      message: `This will permanently delete all ${products.length} products. This action cannot be undone.`,
+      confirmLabel: "Delete All",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      const { data } = await api.delete("/products/bulk", { data: { all: true } });
+      toast.success(`Deleted ${data.deleted} products`);
+      setSelected(new Set());
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete products");
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selected.size === 0) return;
+    const ok = await alert.confirm({
+      title: `Delete ${selected.size} Products`,
+      message: "Delete the selected products permanently? This action cannot be undone.",
+      confirmLabel: "Delete",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      const { data } = await api.delete("/products/bulk", { data: { ids: [...selected] } });
+      toast.success(`Deleted ${data.deleted} products`);
+      setSelected(new Set());
+      setSelectMode(false);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete products");
+    }
+  };
+
   const toggleDraftCategory = (id) => {
     setDraftFilters((f) => ({
       ...f,
@@ -216,7 +284,7 @@ export default function AdminProducts() {
           <MagnifyingGlass size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--ink-soft)" }} />
           <input className="admin-input" style={{ paddingLeft: 36 }} placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <button type="button" className="btn btn-outline btn-sm" style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }} onClick={() => { setDraftFilters(filters); setFilterOpen(true); }}>
+         <button type="button" className="btn btn-outline btn-sm" style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }} onClick={() => { setDraftFilters(filters); setFilterOpen(true); }}>
           <Funnel size={15} /> Filters
           {activeFilterCount > 0 && (
             <span style={{
@@ -227,6 +295,40 @@ export default function AdminProducts() {
             }}>{activeFilterCount}</span>
           )}
         </button>
+        {selectMode ? (
+          <>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--paprika)", alignSelf: "center" }}>{selected.size} selected</span>
+            <button
+              className="btn btn-sm"
+              onClick={handleDeleteSelected}
+              disabled={selected.size === 0}
+              style={{ background: "#c0392b", color: "#fff" }}
+            >
+              <Trash size={15} /> Delete Selected{selected.size ? ` (${selected.size})` : ""}
+            </button>
+            <button className="btn btn-outline btn-sm" onClick={cancelSelect}><X size={15} /> Cancel</button>
+          </>
+        ) : (
+          <>
+            <button
+              className="btn btn-sm"
+              onClick={handleDeleteAll}
+              disabled={products.length === 0}
+              style={{ border: "1.5px solid #c0392b", background: "#fff", color: "#c0392b" }}
+            >
+              <Trash size={15} /> Delete All
+            </button>
+            <button
+              className="btn btn-sm"
+              onClick={enterSelectMode}
+              disabled={products.length === 0}
+              style={{ background: "#c0392b", color: "#fff" }}
+            >
+              <Trash size={15} /> Delete Selected
+            </button>
+          </>
+        )}
+       
       </div>
 
       {error ? (
@@ -238,7 +340,21 @@ export default function AdminProducts() {
           <div className="admin-card" style={{ padding: 0, overflow: "auto" }}>
         <table className="admin-table">
           <thead>
-            <tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Featured</th><th></th></tr>
+            <tr>
+              <th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Featured</th>
+              <th>
+                {selectMode ? (
+                  <input
+                    type="checkbox"
+                    checked={pageItems.length > 0 && pageItems.every((p) => selected.has(p._id))}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all products on page"
+                  />
+                ) : (
+                  "Actions"
+                )}
+              </th>
+            </tr>
           </thead>
 <tbody>
             {loading ? (
@@ -263,10 +379,19 @@ export default function AdminProducts() {
                   <td><span className="admin-badge" style={{ background: p.isAvailable ? "rgba(75,120,101,0.18)" : "rgba(194,65,12,0.1)", color: p.isAvailable ? "var(--mint)" : "var(--paprika)" }}>{p.isAvailable ? "Yes" : "No"}</span></td>
                   <td>{p.isFeatured ? <Star size={14} weight="fill" color="#f59e0b" /> : "-"}</td>
                   <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button className="icon-btn" onClick={() => openEdit(p)} aria-label="Edit"><Pencil size={15} /></button>
-                      <button className="icon-btn danger" onClick={() => handleDelete(p._id)} aria-label="Delete"><Trash size={15} /></button>
-                    </div>
+                    {selectMode ? (
+                      <input
+                        type="checkbox"
+                        checked={selected.has(p._id)}
+                        onChange={() => toggleSelect(p._id)}
+                        aria-label={`Select ${p.name}`}
+                      />
+                    ) : (
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="icon-btn" onClick={() => openEdit(p)} aria-label="Edit"><Pencil size={15} /></button>
+                        <button className="icon-btn danger" onClick={() => handleDelete(p._id)} aria-label="Delete"><Trash size={15} /></button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))

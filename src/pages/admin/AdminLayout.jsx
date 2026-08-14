@@ -15,17 +15,19 @@ import {
 } from "phosphor-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useSettings } from "../../hooks/useSettings.js";
+import NotificationBell from "../../components/admin/NotificationBell.jsx";
+import NotificationDrawer from "../../components/admin/NotificationDrawer.jsx";
 import "../../components/admin/admin.css";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: SquaresFour, end: true },
   { to: "/admin/products", label: "Products", icon: Cube },
+  { to: "/admin/deals", label: "Deals", icon: Ticket },
+  { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { to: "/admin/categories", label: "Categories", icon: Folder },
   { to: "/admin/tags", label: "Tags", icon: Tag },
-  { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { to: "/admin/deals", label: "Deals", icon: Ticket },
-  { to: "/admin/settings", label: "Settings", icon: Gear },
 ];
+const isMobile = window.innerWidth <= 768;
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
@@ -40,23 +42,14 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-shell">
-      <header className="admin-topbar">
-        <button className="admin-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-          <List size={22} />
-        </button>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 19, fontWeight: 700 }}>{settings?.siteName || "Pratha"}</div>
-        <div style={{ fontSize: 11, color: "rgba(251,243,230,0.6)", marginLeft: "auto" }}>Admin</div>
-      </header>
-
-      {sidebarOpen && <div className="admin-overlay" onClick={() => setSidebarOpen(false)} />}
-
       <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
-        <div style={{ padding: "26px 24px", borderBottom: "1px solid rgba(251,243,230,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, lineHeight: 1 }}>{settings?.siteName || "Pratha"}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(251,243,230,0.5)", marginTop: 3 }}>Admin Panel</div>
-            </div>
+        <div className="admin-sidebar-head" style={{ padding: "26px 24px", borderBottom: "1px solid rgba(251,243,230,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div className="admin-sidebar-brand" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <img
+              className="admin-sidebar-logo"
+              src={settings?.logo?.url || "/nav-logo.png"}
+              alt={settings?.siteName || "Paratha Chai"}
+            />
           </div>
           <button className="admin-close-btn" onClick={() => setSidebarOpen(false)} aria-label="Close menu">
             <X size={20} />
@@ -99,11 +92,30 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {sidebarOpen && <div className="admin-overlay" onClick={() => setSidebarOpen(false)} />}
+
+      <div className="admin-content">
+        <header className="admin-topbar">
+          <button className="admin-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            <List size={22} />
+          </button>
+          <div className="admin-topbar-brand">
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, lineHeight: 1 }}>{settings?.siteName || "Paratha Chai"}</div>
+            <div style={{ fontSize: 11.5, color: "rgba(47,33,23,0.55)", marginTop: 3 }}>Admin Panel</div>
+          </div>
+          <div className="admin-topbar-right">
+            <button className="admin-topbar-btn" onClick={() => navigate("/admin/settings")} aria-label="Settings">
+              <Gear size={20} />
+            </button>
+            <NotificationBell />
+          </div>
+        </header>
         <main className="admin-main">
           <Outlet />
         </main>
       </div>
+
+      <NotificationDrawer />
     </div>
   );
 }
