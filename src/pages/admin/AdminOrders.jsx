@@ -205,43 +205,7 @@ export default function AdminOrders() {
     <div>
       <div className="admin-page-header">
         <h1 className="admin-title">Orders</h1>
-        {tab !== "live" && (
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            {selectMode ? (
-              <>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--paprika)" }}>{selected.size} selected</span>
-                <button
-                  className="btn btn-sm"
-                  onClick={handleDeleteSelected}
-                  disabled={selected.size === 0}
-                  style={{ background: "#c0392b", color: "#fff" }}
-                >
-                  <Trash size={15} /> Delete Selected{selected.size ? ` (${selected.size})` : ""}
-                </button>
-                <button className="btn btn-outline btn-sm" onClick={cancelSelect}><X size={15} /> Cancel</button>
-              </>
-            ) : (
-              <>
-                <button
-                  className="btn btn-sm"
-                  onClick={handleDeleteAll}
-                  disabled={orders.length === 0}
-                  style={{ border: "1.5px solid #c0392b", background: "#fff", color: "#c0392b" }}
-                >
-                  <Trash size={15} /> Delete All {tab === "completed" ? "Completed" : "Cancelled"}
-                </button>
-                <button
-                  className="btn btn-sm"
-                  onClick={enterSelectMode}
-                  disabled={orders.length === 0}
-                  style={{ background: "#c0392b", color: "#fff" }}
-                >
-                  <Trash size={15} /> Delete Selected
-                </button>
-              </>
-            )}
-          </div>
-        )}
+       
       </div>
 
       <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
@@ -277,6 +241,45 @@ export default function AdminOrders() {
               <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
             ))}
           </select>
+        )}
+
+
+         {tab !== "live" && (
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            {selectMode ? (
+              <>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--paprika)" }}>{selected.size} selected</span>
+                <button
+                  className="btn btn-sm"
+                  onClick={handleDeleteSelected}
+                  disabled={selected.size === 0}
+                  style={{ background: "#c0392b", color: "#fff" }}
+                >
+                  <Trash size={15} /> Delete Selected{selected.size ? ` (${selected.size})` : ""}
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={cancelSelect}><X size={15} /> Cancel</button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="btn btn-sm"
+                  onClick={handleDeleteAll}
+                  disabled={orders.length === 0}
+                  style={{ border: "1.5px solid #c0392b", background: "#fff", color: "#c0392b" }}
+                >
+                  <Trash size={15} /> Delete All {tab === "completed" ? "Completed" : "Cancelled"}
+                </button>
+                <button
+                  className="btn btn-sm"
+                  onClick={enterSelectMode}
+                  disabled={orders.length === 0}
+                  style={{ background: "#c0392b", color: "#fff" }}
+                >
+                  <Trash size={15} /> Delete Selected
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
 

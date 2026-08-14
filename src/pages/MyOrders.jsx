@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useReducer, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { MagnifyingGlass, CaretDown, CaretUp, Calendar, Clock as ClockIcon, Users, Truck, Check, Timer, Package, CheckCircle, X, ArrowDown, Bank } from "phosphor-react";
+import { MagnifyingGlass, CaretDown, CaretUp, Calendar, Clock as ClockIcon, Users, Truck, Check, Timer, Package, CheckCircle, X, ArrowDown, Bank, Trash } from "phosphor-react";
 import api from "../api/axios.js";
 import { formatPKR } from "../utils/format.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import ImageLightbox from "../components/ImageLightbox.jsx";
+import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import { SkeletonList } from "../components/Skeleton.jsx";
 
 const ACTIVE_STATUSES = ["pending", "confirmed", "preparing", "out_for_delivery", "ready_for_pickup"];
@@ -194,7 +195,7 @@ function OrderCard({ order, defaultOpen }) {
   );
 }
 
-function PreviousOrderCard({ order }) {
+function PreviousOrderCard({ order, onDelete }) {
   const isDelivered = order.orderStatus === "delivered" || order.orderStatus === "pickup_complete";
   const isCancelled = order.orderStatus === "cancelled";
   const isPickupComplete = order.orderStatus === "pickup_complete";
@@ -249,13 +250,24 @@ function PreviousOrderCard({ order }) {
             <div style={{ fontWeight: 800, fontSize: 14, color: isCancelled ? "var(--ink-soft)" : "var(--paprika)" }}>
               {formatPKR(order.total)}
             </div>
-          <div style={{
-            marginTop: 4, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100,
-            background: isCancelled ? "#e74c3c18" : "#4b7b5b18",
-            color: isCancelled ? "#e74c3c" : "#4b7b5b",
-            whiteSpace: "nowrap",
-          }}>
-            {statusLabel}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginTop: 4 }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100,
+              background: isCancelled ? "#e74c3c18" : "#4b7b5b18",
+              color: isCancelled ? "#e74c3c" : "#4b7b5b",
+              whiteSpace: "nowrap",
+            }}>
+              {statusLabel}
+            </div>
+            <button
+              type="button"
+              onClick={() => onDelete(order)}
+              title="Remove from history"
+              aria-label={`Remove ${order.orderNumber} from history`}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink-soft)", padding: 4, display: "inline-flex" }}
+            >
+              <Trash size={16} />
+            </button>
           </div>
         </div>
       </div>
@@ -301,6 +313,7 @@ export default function MyActivity() {
   }));
 
   const { email, selected, orders, loading, searched, showPrevious } = state;
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const activeOrders = orders.filter((o) => ACTIVE_STATUSES.includes(o.orderStatus));
   const previousOrders = orders.filter((o) => !ACTIVE_STATUSES.includes(o.orderStatus));
@@ -340,6 +353,18 @@ export default function MyActivity() {
 
   const handleBack = () => {
     dispatch({ type: "BACK" });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await api.delete(`/orders/my/${deleteTarget.orderNumber}?email=${encodeURIComponent(email)}`);
+      toast.success("Order removed from your history");
+      setDeleteTarget(null);
+      fetchData(email);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to remove order");
+    }
   };
 
   return (
@@ -418,7 +443,9 @@ export default function MyActivity() {
                     </button>
                     {showPrevious && (
                       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-                        {previousOrders.map((order) => <PreviousOrderCard key={order._id} order={order} />)}
+                        {previousOrders.map((order) => (
+                          <PreviousOrderCard key={order._id} order={order} onDelete={(o) => setDeleteTarget(o)} />
+                        ))}
                       </div>
                     )}
                   </div>
@@ -428,6 +455,15 @@ export default function MyActivity() {
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Remove Order"
+        message={deleteTarget ? `Remove order ${deleteTarget.orderNumber} from your history? This only hides it from your side.` : ""}
+        confirmLabel="Remove"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
 
       <style>{`
         .form-input { padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--line); font-family: inherit; font-size: 14px; background: #fff; outline: none; width: 100%; box-sizing: border-box; }

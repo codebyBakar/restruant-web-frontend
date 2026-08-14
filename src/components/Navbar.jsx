@@ -11,6 +11,8 @@ const allLinks = [
   { to: "/deals", label: "Deals" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
+  { to: "/track", label: "Orders" },
+
  
 ];
 
