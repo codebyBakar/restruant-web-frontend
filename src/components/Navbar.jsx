@@ -11,9 +11,7 @@ const allLinks = [
   { to: "/deals", label: "Deals" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
-  { to: "/track", label: "Orders" },
-
- 
+  { to: "/track", label: "Orders", desktopOnly: true },
 ];
 
 export default function Navbar() {
@@ -165,7 +163,7 @@ export default function Navbar() {
           <X size={28} />
         </button>
         <nav className="drawer__nav">
-          {allLinks.map((l) => (
+          {allLinks.filter((l) => !l.desktopOnly).map((l) => (
             <NavLink
               key={l.to}
               to={l.to}
