@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
 import { useUI } from "../context/UIContext.jsx";
 import { formatPKR } from "../utils/format.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import { useSettings } from "../hooks/useSettings.js";
 import { useStoreStatus } from "../hooks/useStoreStatus.js";
@@ -88,7 +89,7 @@ export default function CartDrawer() {
                   {items.map((item) => (
                     <div key={item.lineKey} style={{ display: "flex", gap: 12 }}>
                       <div style={{ width: 68, height: 68, borderRadius: 12, overflow: "hidden", background: "var(--cream-2)", flexShrink: 0 }}>
-                        {item.image && <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                        {item.image && <img src={optimizeImage(item.image, { width: 200 })} alt={item.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>

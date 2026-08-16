@@ -7,6 +7,7 @@ export default function ReceiptModal({ order, show, onClose }) {
 
   const settings = getSettings() || {};
   const currency = getCurrency() || "Rs.";
+  // Logo keeps its original uploaded quality — no transforms that could blur it.
   const logo = settings.logo?.url || "";
   const siteName = settings.siteName || "Pratha";
   const address = settings.address || "";

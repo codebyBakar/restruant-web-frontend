@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { MagnifyingGlass, CaretDown, CaretUp, Calendar, Clock as ClockIcon, Users, Truck, Check, Timer, Package, CheckCircle, X, ArrowDown, Bank, Trash } from "phosphor-react";
 import api from "../api/axios.js";
 import { formatPKR } from "../utils/format.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import ImageLightbox from "../components/ImageLightbox.jsx";
 import ConfirmDialog from "../components/ConfirmDialog.jsx";
@@ -174,13 +175,14 @@ function OrderCard({ order, defaultOpen }) {
               </div>
               <button
                 type="button"
-                onClick={() => setLightbox(order.paymentScreenshot.url)}
+                onClick={() => setLightbox(optimizeImage(order.paymentScreenshot.url, { width: 1200 }))}
                 aria-label="View payment screenshot full size"
                 style={{ display: "block", padding: 0, border: "none", background: "none", cursor: "pointer", maxWidth: "100%" }}
               >
                 <img
-                  src={order.paymentScreenshot.url}
+                  src={optimizeImage(order.paymentScreenshot.url, { width: 600 })}
                   alt="Payment screenshot"
+                  loading="lazy"
                   style={{ maxWidth: "100%", maxHeight: 160, borderRadius: 10, display: "block", border: "1px solid var(--line)" }}
                 />
               </button>

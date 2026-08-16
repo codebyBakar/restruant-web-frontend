@@ -6,6 +6,7 @@ import { useUI } from "../context/UIContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { formatPKR } from "../utils/format.js";
 import { useCurrency } from "../hooks/useCurrency.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 
 export default function DealModal() {
   useCurrency();
@@ -85,7 +86,7 @@ export default function DealModal() {
             </div>
             <div style={{ aspectRatio: "16/10", background: "var(--cream-2)", overflow: "hidden" }}>
               {activeDeal.image?.url ? (
-                <img src={activeDeal.image.url} alt={activeDeal.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={optimizeImage(activeDeal.image.url, { width: 800 })} alt={activeDeal.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : null}
             </div>
 

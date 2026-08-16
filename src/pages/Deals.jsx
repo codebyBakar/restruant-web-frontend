@@ -7,6 +7,7 @@ import { useCart } from "../context/CartContext.jsx";
 import { useUI } from "../context/UIContext.jsx";
 import { formatPKR } from "../utils/format.js";
 import { useCurrency } from "../hooks/useCurrency.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import { SkeletonGrid } from "../components/Skeleton.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 
@@ -67,7 +68,7 @@ export default function Deals() {
             >
               {deal.image?.url ? (
                 <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "var(--cream-2)" }}>
-                  <img src={deal.image.url} alt={deal.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={optimizeImage(deal.image.url, { width: 800 })} alt={deal.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
               ) : (
                 <div style={{ aspectRatio: "16/9", background: "var(--cream-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-soft)", fontSize: 13 }}>

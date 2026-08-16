@@ -4,8 +4,10 @@ import { Plus, Pencil, Trash, X } from "phosphor-react";
 import api from "../../api/axios.js";
 import EmptyState from "../../components/EmptyState.jsx";
 import AdminModal from "../../components/admin/AdminModal.jsx";
+import ImageLightbox from "../../components/ImageLightbox.jsx";
 import Pagination from "../../components/admin/Pagination.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
+import { optimizeImage } from "../../utils/cloudinary.js";
 
 const PAGE_SIZE = 10;
 
@@ -21,6 +23,8 @@ export default function AdminCategories() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const imageFileRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const [page, setPage] = useState(1);
   const [retryKey, setRetryKey] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -49,6 +53,7 @@ export default function AdminCategories() {
     setEditing(null);
     setForm(emptyForm);
     imageFileRef.current = null;
+    setImagePreview(null);
     setModalOpen(true);
   };
 
@@ -56,6 +61,7 @@ export default function AdminCategories() {
     setEditing(cat);
     setForm({ name: cat.name, description: cat.description || "", isActive: cat.isActive });
     imageFileRef.current = null;
+    setImagePreview(null);
     setModalOpen(true);
   };
 
@@ -295,7 +301,7 @@ export default function AdminCategories() {
                         ))}
                       </select>
                     </td>
-                    <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{c.image?.url && <img src={c.image.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
+                    <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{c.image?.url && <img src={optimizeImage(c.image.url, { width: 120 })} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
                     <td style={{ fontWeight: 700 }}>{c.name}</td>
                     <td style={{ color: "var(--ink-soft)", maxWidth: 260 }}>{c.description}</td>
                     <td>{productCounts[c._id] ?? 0}</td>
@@ -348,7 +354,19 @@ export default function AdminCategories() {
             </div>
             <div>
               <label className="admin-label">Image</label>
-              <input type="file" accept="image/*" onChange={(e) => { imageFileRef.current = e.target.files[0]; }} className="admin-input" />
+              <input type="file" accept="image/*" onChange={(e) => {
+                const file = e.target.files[0];
+                imageFileRef.current = file;
+                setImagePreview(file ? URL.createObjectURL(file) : null);
+              }} className="admin-input" />
+              {(imagePreview || (editing && editing.image?.url)) && (
+                <img
+                  src={imagePreview || editing.image.url}
+                  alt="Category image preview"
+                  onClick={() => setLightbox(imagePreview || editing.image.url)}
+                  style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 10, marginTop: 10, border: "1px solid var(--line)", cursor: "zoom-in", background: "var(--cream-2)" }}
+                />
+              )}
             </div>
           </div>
           <div>
@@ -356,6 +374,7 @@ export default function AdminCategories() {
           </div>
         </form>
       </AdminModal>
+      <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
 }

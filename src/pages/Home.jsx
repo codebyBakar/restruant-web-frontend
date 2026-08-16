@@ -10,6 +10,7 @@ import { SkeletonCategory, SkeletonGrid } from "../components/Skeleton.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import api from "../api/axios.js";
 import { formatPKR } from "../utils/format.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import { useSettings } from "../hooks/useSettings.js";
 
 export default function Home() {
@@ -127,10 +128,10 @@ export default function Home() {
               {categories.map((cat, i) => (
                 <m.div
                   key={cat._id}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3) }}
                   className="category-slide"
                 >
                   <Link
@@ -145,7 +146,7 @@ export default function Home() {
                     }}
                   >
                     {cat.image?.url && (
-                      <img src={cat.image.url} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={optimizeImage(cat.image.url, { width: 400 })} alt={cat.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     )}
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(33,23,17,0.75), transparent 55%)" }} />
                     <span style={{ position: "absolute", bottom: 14, left: 14, right: 14, color: "#fff", fontWeight: 700, fontSize: 15 }}>
@@ -324,6 +325,7 @@ export default function Home() {
               <img
                 src="/images/home-restaurant.jpg"
                 alt="Inside the Pratha dining room"
+                loading="lazy"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(33,23,17,0.55), transparent 50%)" }} />
@@ -378,7 +380,9 @@ export default function Home() {
           display: flex;
           gap: 18px;
           overflow-x: auto;
-          scroll-snap-type: x mandatory;
+          /* proximity (not mandatory) so vertical page scroll is never blocked by the horizontal snap */
+          scroll-snap-type: x proximity;
+          overscroll-behavior-x: contain;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
           padding-bottom: 8px;
@@ -614,7 +618,7 @@ function DealCard({ deal }) {
     <Link to="/deals" className="deal-card">
       {deal.image?.url && (
         <>
-          <img src={deal.image.url} alt={deal.title} className="deal-card-bg" />
+          <img src={optimizeImage(deal.image.url, { width: 800 })} alt={deal.title} loading="lazy" className="deal-card-bg" />
           <div className="deal-card-fade" />
         </>
       )}

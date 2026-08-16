@@ -30,6 +30,8 @@ export default function Footer() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 14.5 }}>
             <Link to="/about" style={{ color: "rgba(251,243,230,0.8)" }}>About Us</Link>
             <Link to="/contact" style={{ color: "rgba(251,243,230,0.8)" }}>Contact</Link>
+            <Link to="/privacy-policy" style={{ color: "rgba(251,243,230,0.8)" }}>Privacy Policy</Link>
+            <Link to="/terms-condition" style={{ color: "rgba(251,243,230,0.8)" }}>Terms & Conditions</Link>
           </div>
         </div>
         <div>

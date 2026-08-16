@@ -6,8 +6,10 @@ import EmptyState from "../../components/EmptyState.jsx";
 import AdminModal from "../../components/admin/AdminModal.jsx";
 import Pagination from "../../components/admin/Pagination.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
+import ImageLightbox from "../../components/ImageLightbox.jsx";
 import { formatPKR } from "../../utils/format.js";
 import { getCurrency } from "../../utils/currency.js";
+import { optimizeImage } from "../../utils/cloudinary.js";
 import { useCurrency } from "../../hooks/useCurrency.js";
 
 const PAGE_SIZE = 10;
@@ -24,6 +26,7 @@ const emptyForm = {
   spiceLevel: "none",
   prepTimeMinutes: 20,
   isAvailable: true,
+  unavailableBadge: "",
   isFeatured: false,
   variants: [],
 };
@@ -45,6 +48,8 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [lightbox, setLightbox] = useState(null);
   const [saving, setSaving] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
@@ -91,6 +96,7 @@ export default function AdminProducts() {
     setEditing(null);
     setForm(emptyForm);
     setImageFiles([]);
+    setImagePreviews([]);
     setModalOpen(true);
   };
 
@@ -108,11 +114,19 @@ export default function AdminProducts() {
       spiceLevel: p.spiceLevel,
       prepTimeMinutes: p.prepTimeMinutes,
       isAvailable: p.isAvailable,
+      unavailableBadge: p.unavailableBadge || "",
       isFeatured: p.isFeatured,
       variants: p.variants || [],
     });
     setImageFiles([]);
+    setImagePreviews([]);
     setModalOpen(true);
+  };
+
+  const handleImageChange = (e) => {
+    const files = [...e.target.files];
+    setImageFiles(files);
+    setImagePreviews(files.map((f) => URL.createObjectURL(f)));
   };
 
   const toggleTag = (id) => {
@@ -145,6 +159,7 @@ export default function AdminProducts() {
       fd.append("spiceLevel", form.spiceLevel);
       fd.append("prepTimeMinutes", form.prepTimeMinutes);
       fd.append("isAvailable", form.isAvailable);
+      fd.append("unavailableBadge", form.isAvailable ? "" : form.unavailableBadge);
       fd.append("isFeatured", form.isFeatured);
       fd.append("variants", JSON.stringify(form.variants.filter((v) => v.label && v.price)));
       imageFiles.forEach((f) => fd.append("images", f));
@@ -372,11 +387,19 @@ export default function AdminProducts() {
             ) : (
               pageItems.map((p) => (
                 <tr key={p._id}>
-                  <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{p.images?.[0]?.url && <img src={p.images[0].url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
+                  <td><div style={{ width: 42, height: 42, borderRadius: 8, background: "var(--cream-2)", overflow: "hidden" }}>{p.images?.[0]?.url && <img src={optimizeImage(p.images[0].url, { width: 120 })} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}</div></td>
                   <td style={{ fontWeight: 700 }}>{p.name}</td>
                   <td>{p.category?.name || "-"}</td>
                   <td>{formatPKR(p.discountPrice || p.basePrice)}</td>
-                  <td><span className="admin-badge" style={{ background: p.isAvailable ? "rgba(75,120,101,0.18)" : "rgba(194,65,12,0.1)", color: p.isAvailable ? "var(--mint)" : "var(--paprika)" }}>{p.isAvailable ? "Yes" : "No"}</span></td>
+                  <td>
+                    {p.isAvailable ? (
+                      <span className="admin-badge" style={{ background: "rgba(75,120,101,0.18)", color: "var(--mint)" }}>Available</span>
+                    ) : (
+                      <span className="admin-badge" style={{ background: p.unavailableBadge === "coming_soon" ? "rgba(227,160,8,0.15)" : "rgba(194,65,12,0.1)", color: p.unavailableBadge === "coming_soon" ? "#8a5f02" : "var(--paprika)" }}>
+                        {p.unavailableBadge === "coming_soon" ? "Coming Soon" : "Unavailable"}
+                      </span>
+                    )}
+                  </td>
                   <td>{p.isFeatured ? <Star size={14} weight="fill" color="#f59e0b" /> : "-"}</td>
                   <td>
                     {selectMode ? (
@@ -597,7 +620,7 @@ export default function AdminProducts() {
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: 20 }}>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
             <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
               <input type="checkbox" checked={form.isVeg} onChange={(e) => setForm({ ...form, isVeg: e.target.checked })} /> Vegetarian
             </label>
@@ -605,21 +628,62 @@ export default function AdminProducts() {
               <input type="checkbox" checked={!form.isVeg} onChange={(e) => setForm({ ...form, isVeg: !e.target.checked })} /> Non-Veg
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
-              <input type="checkbox" checked={form.isAvailable} onChange={(e) => setForm({ ...form, isAvailable: e.target.checked })} /> Available
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
               <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} /> Featured
             </label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <label style={{ fontSize: 13.5, fontWeight: 600 }}>Availability</label>
+              <select
+                className="admin-input"
+                style={{ width: 150, padding: "7px 10px" }}
+                value={form.isAvailable ? "available" : "unavailable"}
+                onChange={(e) => {
+                  const available = e.target.value === "available";
+                  setForm({ ...form, isAvailable: available, unavailableBadge: available ? "" : form.unavailableBadge });
+                }}
+              >
+                <option value="available">Available</option>
+                <option value="unavailable">Unavailable</option>
+              </select>
+            </div>
+            {!form.isAvailable && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <label style={{ fontSize: 13.5, fontWeight: 600 }}>Badge</label>
+                <select
+                  className="admin-input"
+                  style={{ width: 170, padding: "7px 10px" }}
+                  value={form.unavailableBadge || "unavailable"}
+                  onChange={(e) => setForm({ ...form, unavailableBadge: e.target.value })}
+                >
+                  <option value="coming_soon">Coming Soon</option>
+                  <option value="unavailable">Unavailable</option>
+                  <option value="">None</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div>
             <label className="admin-label">Images {editing && "(uploading new images replaces old ones)"}</label>
-            <input type="file" accept="image/*" multiple className="admin-input" onChange={(e) => setImageFiles([...e.target.files])} />
+            <input type="file" accept="image/*" multiple className="admin-input" onChange={handleImageChange} />
+            {(imagePreviews.length > 0 || (editing && editing.images?.length > 0)) && (
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+                {(imagePreviews.length > 0 ? imagePreviews : (editing?.images || []).map((img) => img.url)).map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`Preview ${i + 1}`}
+                    onClick={() => setLightbox(src)}
+                    style={{ width: 76, height: 76, objectFit: "cover", borderRadius: 10, border: "1px solid var(--line)", cursor: "zoom-in", background: "var(--cream-2)" }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={saving} style={{ marginTop: 6 }}>{saving ? "Saving..." : "Save Product"}</button>
         </form>
       </AdminModal>
+      <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
 }

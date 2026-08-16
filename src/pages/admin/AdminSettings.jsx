@@ -4,6 +4,7 @@ import { Storefront, MapPin, Sliders, Bank, UserCircle, Eye, EyeSlash, Clock } f
 import api from "../../api/axios.js";
 import { SkeletonDetail } from "../../components/Skeleton.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
+import ImageLightbox from "../../components/ImageLightbox.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { setCurrency } from "../../utils/currency.js";
@@ -39,6 +40,7 @@ export default function AdminSettings() {
 
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const [form, setForm] = useState({});
 
   const [profileForm, setProfileForm] = useState({ name: "", email: "", currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -222,7 +224,12 @@ export default function AdminSettings() {
             <label className="admin-label">Site Logo</label>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               {(logoPreview || settings.logo?.url) && (
-                <img src={logoPreview || settings.logo?.url} alt="logo" style={{ width: 72, height: 72, objectFit: "contain", borderRadius: 10, background: "var(--cream-2)", border: "1px solid var(--line)" }} />
+                <img
+                  src={logoPreview || settings.logo?.url}
+                  alt="logo"
+                  onClick={() => setLightbox(logoPreview || settings.logo?.url)}
+                  style={{ width: 72, height: 72, objectFit: "contain", borderRadius: 10, background: "var(--cream-2)", border: "1px solid var(--line)", cursor: "zoom-in" }}
+                />
               )}
               <div style={{ flex: 1 }}>
                 <input type="file" accept="image/*" className="admin-input" onChange={handleLogoChange} />
@@ -482,6 +489,7 @@ export default function AdminSettings() {
           </form>
         </div>
       )}
+      <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
 }

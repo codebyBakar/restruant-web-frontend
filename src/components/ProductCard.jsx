@@ -1,6 +1,7 @@
 import { Plus } from "phosphor-react";
 import { m } from "framer-motion";
 import { formatPKR } from "../utils/format.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useUI } from "../context/UIContext.jsx";
@@ -52,7 +53,7 @@ export default function ProductCard({ product, index = 0 }) {
       <div style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "var(--cream-2)" }}>
         {product.images?.[0]?.url ? (
           <img
-            src={product.images[0].url}
+            src={optimizeImage(product.images[0].url, { width: 600 })}
             alt={product.name}
             loading="lazy"
             style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
@@ -64,7 +65,9 @@ export default function ProductCard({ product, index = 0 }) {
         )}
         {!product.isAvailable && (
           <div style={{ position: "absolute", inset: 0, background: "rgba(33,23,17,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: "#fff", fontWeight: 700, fontSize: 13, letterSpacing: ".04em" }}>SOLD OUT</span>
+            <span style={{ color: "#fff", fontWeight: 700, fontSize: 13, letterSpacing: ".04em" }}>
+              {product.unavailableBadge === "coming_soon" ? "COMING SOON" : "UNAVAILABLE"}
+            </span>
           </div>
         )}
         {product.tags?.[0] && (

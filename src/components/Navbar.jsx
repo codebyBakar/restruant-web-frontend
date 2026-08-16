@@ -19,6 +19,7 @@ export default function Navbar() {
   const { openCart } = useUI();
   const { settings } = useSettings();
   const siteName = settings?.siteName || "Pratha";
+  // Logo is shown at its original uploaded quality — no resizing/transforms that could blur it.
   const logoUrl = settings?.logo?.url || "/nav-logo.png";
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);

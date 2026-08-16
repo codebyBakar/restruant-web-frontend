@@ -7,6 +7,7 @@ import { useCart } from "../context/CartContext.jsx";
 import { formatPKR } from "../utils/format.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 import { tagTone } from "../utils/color.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import ImageLightbox from "./ImageLightbox.jsx";
 
 export default function ProductModal() {
@@ -115,9 +116,9 @@ export default function ProductModal() {
                 {activeProduct.images?.[0]?.url ? (
                   <>
                     <img
-                      src={activeProduct.images[0].url}
+                      src={optimizeImage(activeProduct.images[0].url, { width: 800 })}
                       alt={activeProduct.name}
-                      onClick={() => setLightbox(activeProduct.images[0].url)}
+                      onClick={() => setLightbox(optimizeImage(activeProduct.images[0].url, { width: 1200 }))}
                       style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "zoom-in", borderRadius: 10 }}
                     />
                     <span
@@ -306,7 +307,7 @@ export default function ProductModal() {
                   disabled={!activeProduct.isAvailable}
                   style={{ flex: 1, height: 48 }}
                 >
-                  {activeProduct.isAvailable ? `Add to Cart · ${formatPKR(total)}` : "Sold Out"}
+                  {activeProduct.isAvailable ? `Add to Cart · ${formatPKR(total)}` : (activeProduct.unavailableBadge === "coming_soon" ? "Coming Soon" : "Unavailable")}
                 </button>
               </div>
             </div>

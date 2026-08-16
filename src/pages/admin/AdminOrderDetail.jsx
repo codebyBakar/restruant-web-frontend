@@ -11,6 +11,7 @@ import RelativeTime from "../../components/RelativeTime.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
 import { useNotification } from "../../context/NotificationContext.jsx";
 import { formatPKR } from "../../utils/format.js";
+import { optimizeImage } from "../../utils/cloudinary.js";
 import { useCurrency } from "../../hooks/useCurrency.js";
 
 const STATUS_LABELS = {
@@ -187,9 +188,10 @@ export default function AdminOrderDetail() {
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Payment Screenshot</div>
                 <img
-                  src={order.paymentScreenshot.url}
+                  src={optimizeImage(order.paymentScreenshot.url, { width: 800 })}
                   alt="Payment Screenshot"
-                  onClick={() => setLightbox(order.paymentScreenshot.url)}
+                  onClick={() => setLightbox(optimizeImage(order.paymentScreenshot.url, { width: 1200 }))}
+                  loading="lazy"
                   style={{ width: "100%", maxHeight: 260, objectFit: "contain", borderRadius: 10, border: "1px solid var(--line)", background: "#fafafa", cursor: "pointer" }}
                 />
                 <div style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 4 }}>Click to view full size</div>

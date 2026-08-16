@@ -7,6 +7,7 @@ import api from "../api/axios.js";
 import { SkeletonDetail } from "../components/Skeleton.jsx";
 import ImageLightbox from "../components/ImageLightbox.jsx";
 import { formatPKR } from "../utils/format.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 import { useCurrency } from "../hooks/useCurrency.js";
 
 export default function OrderSuccess() {
@@ -133,9 +134,10 @@ export default function OrderSuccess() {
             <p style={{ fontSize: 13, color: "#558b2f" }}>Your payment is pending admin verification. We'll notify you once confirmed.</p>
             {order?.paymentScreenshot?.url && (
               <img
-                src={order.paymentScreenshot.url}
+                src={optimizeImage(order.paymentScreenshot.url, { width: 800 })}
                 alt="Payment screenshot"
-                onClick={() => setLightbox(order.paymentScreenshot.url)}
+                onClick={() => setLightbox(optimizeImage(order.paymentScreenshot.url, { width: 1200 }))}
+                loading="lazy"
                 style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 10, marginTop: 12, cursor: "pointer" }}
               />
             )}

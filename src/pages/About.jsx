@@ -22,6 +22,7 @@ import {
 } from "phosphor-react";
 import { useSettings } from "../hooks/useSettings.js";
 import { formatPKR } from "../utils/format.js";
+import { optimizeImage } from "../utils/cloudinary.js";
 
 const EST_YEAR = 1987;
 
@@ -269,7 +270,7 @@ export default function About() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => setLightbox(src)}
+              onClick={() => setLightbox(optimizeImage(src, { width: 1200 }))}
               aria-label={`Open gallery image ${i + 1}`}
               style={{
                 border: "none",
@@ -280,7 +281,7 @@ export default function About() {
                 position: "relative",
               }}
             >
-              <img src={src} alt={`Pratha gallery ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s ease" }} />
+              <img src={optimizeImage(src, { width: 600 })} alt={`Pratha gallery ${i + 1}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s ease" }} />
             </m.button>
           ))}
         </div>

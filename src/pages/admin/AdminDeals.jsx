@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash, X } from "phosphor-react";
 import api from "../../api/axios.js";
 import EmptyState from "../../components/EmptyState.jsx";
 import AdminModal from "../../components/admin/AdminModal.jsx";
+import ImageLightbox from "../../components/ImageLightbox.jsx";
 import Pagination from "../../components/admin/Pagination.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
 import { formatPKR } from "../../utils/format.js";
@@ -28,6 +29,8 @@ export default function AdminDeals() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
   const [saving, setSaving] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedQty, setSelectedQty] = useState(1);
@@ -49,20 +52,23 @@ export default function AdminDeals() {
   };
   useEffect(load, [retryKey]);
 
-  const openCreate = () => { setEditing(null); setForm(emptyForm); setImageFile(null); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); setForm(emptyForm); setImageFile(null); setImagePreview(null); setModalOpen(true); };
   const openEdit = (deal) => {
     setEditing(deal);
     setForm({
       title: deal.title, subtitle: deal.subtitle || "", price: deal.price || "",
       isForLife: deal.isForLife || false,
       startDate: deal.startDate?.split("T")[0] || "", endDate: deal.endDate?.split("T")[0] || "",
-      isActive: deal.isActive, items: (deal.items || []).map((i) => ({
+      isActive: deal.isActive,
+      // Drop items whose product no longer exists — saving null products fails validation (400)
+      items: (deal.items || []).filter((i) => i.product).map((i) => ({
         product: i.product?._id || i.product,
         productName: i.product?.name || i.productName || "",
         quantity: i.quantity,
       })),
     });
     setImageFile(null);
+    setImagePreview(null);
     setModalOpen(true);
   };
 
@@ -345,8 +351,8 @@ export default function AdminDeals() {
             </div>
             {form.items.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {form.items.map((item) => (
-                  <div key={item.product} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "var(--cream-2)", borderRadius: 10 }}>
+                {form.items.map((item, idx) => (
+                  <div key={item.product || `item-${idx}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "var(--cream-2)", borderRadius: 10 }}>
                     <span style={{ fontWeight: 600, fontSize: 13.5 }}>{item.productName} × {item.quantity}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <input type="number" min={1} className="admin-input" style={{ width: 55, padding: "4px 8px" }} value={item.quantity} onChange={(e) => updateItemQty(item.product, parseInt(e.target.value, 10) || 1)} />
@@ -358,7 +364,22 @@ export default function AdminDeals() {
             ) : <p style={{ fontSize: 12.5, color: "var(--ink-soft)", margin: 0 }}>No products added yet.</p>}
           </div>
 
-          <div><label className="admin-label">Banner Image</label><input type="file" accept="image/*" className="admin-input" onChange={(e) => setImageFile(e.target.files[0])} /></div>
+          <div>
+            <label className="admin-label">Banner Image</label>
+            <input type="file" accept="image/*" className="admin-input" onChange={(e) => {
+              const file = e.target.files[0];
+              setImageFile(file);
+              setImagePreview(file ? URL.createObjectURL(file) : null);
+            }} />
+            {(imagePreview || (editing && editing.image?.url)) && (
+              <img
+                src={imagePreview || editing.image.url}
+                alt="Deal image preview"
+                onClick={() => setLightbox(imagePreview || editing.image.url)}
+                style={{ width: 84, height: 84, objectFit: "cover", borderRadius: 10, marginTop: 10, border: "1px solid var(--line)", cursor: "zoom-in", background: "var(--cream-2)" }}
+              />
+            )}
+          </div>
 
           <div className="admin-grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
             <div><label className="admin-label">Start Date</label><input type="date" className="admin-input" value={form.startDate} disabled={form.isForLife} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></div>
@@ -376,6 +397,7 @@ export default function AdminDeals() {
           <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Saving..." : "Save Deal"}</button>
         </form>
       </AdminModal>
+      <ImageLightbox src={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
 }

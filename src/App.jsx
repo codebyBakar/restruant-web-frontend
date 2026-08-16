@@ -22,6 +22,8 @@ const OrderSuccess = lazy(() => import("./pages/OrderSuccess.jsx"));
 const MyActivity = lazy(() => import("./pages/MyOrders.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
+const TermsConditions = lazy(() => import("./pages/TermsConditions.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin.jsx"));
@@ -81,6 +83,8 @@ export default function App() {
         <Route path="/track" element={<SiteLayout><RouteFallback><MyActivity /></RouteFallback></SiteLayout>} />
         <Route path="/about" element={<SiteLayout><RouteFallback><About /></RouteFallback></SiteLayout>} />
         <Route path="/contact" element={<SiteLayout><RouteFallback><Contact /></RouteFallback></SiteLayout>} />
+        <Route path="/privacy-policy" element={<SiteLayout><RouteFallback><PrivacyPolicy /></RouteFallback></SiteLayout>} />
+        <Route path="/terms-condition" element={<SiteLayout><RouteFallback><TermsConditions /></RouteFallback></SiteLayout>} />
 
         <Route path="/prathachaiadmin@2026" element={<RouteFallback><AdminLogin /></RouteFallback>} />
         <Route
