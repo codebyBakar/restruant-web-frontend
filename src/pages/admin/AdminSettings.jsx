@@ -9,6 +9,7 @@ import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { setCurrency } from "../../utils/currency.js";
 import { isStoreOpen, STORE_TIMEZONES } from "../../utils/storeStatus.js";
+import { logoImage } from "../../utils/cloudinary.js";
 
 const CURRENCIES = [
   { symbol: "Rs.", label: "PKR — Pakistani Rupee" },
@@ -225,9 +226,9 @@ export default function AdminSettings() {
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               {(logoPreview || settings.logo?.url) && (
                 <img
-                  src={logoPreview || settings.logo?.url}
+                  src={logoPreview || logoImage(settings.logo?.url)}
                   alt="logo"
-                  onClick={() => setLightbox(logoPreview || settings.logo?.url)}
+                  onClick={() => setLightbox(logoPreview || logoImage(settings.logo?.url))}
                   style={{ width: 72, height: 72, objectFit: "contain", borderRadius: 10, background: "var(--cream-2)", border: "1px solid var(--line)", cursor: "zoom-in" }}
                 />
               )}

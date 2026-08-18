@@ -146,7 +146,7 @@ export default function Home() {
                     }}
                   >
                     {cat.image?.url && (
-                      <img src={optimizeImage(cat.image.url, { width: 400 })} alt={cat.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={optimizeImage(cat.image.url)} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     )}
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(33,23,17,0.75), transparent 55%)" }} />
                     <span style={{ position: "absolute", bottom: 14, left: 14, right: 14, color: "#fff", fontWeight: 700, fontSize: 15 }}>
@@ -325,7 +325,6 @@ export default function Home() {
               <img
                 src="/images/home-restaurant.jpg"
                 alt="Inside the Pratha dining room"
-                loading="lazy"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(33,23,17,0.55), transparent 50%)" }} />
@@ -618,7 +617,7 @@ function DealCard({ deal }) {
     <Link to="/deals" className="deal-card">
       {deal.image?.url && (
         <>
-          <img src={optimizeImage(deal.image.url, { width: 800 })} alt={deal.title} loading="lazy" className="deal-card-bg" />
+          <img src={optimizeImage(deal.image.url)} alt={deal.title} className="deal-card-bg" />
           <div className="deal-card-fade" />
         </>
       )}

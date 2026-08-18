@@ -53,9 +53,8 @@ export default function ProductCard({ product, index = 0 }) {
       <div style={{ position: "relative", aspectRatio: "4/3", overflow: "hidden", background: "var(--cream-2)" }}>
         {product.images?.[0]?.url ? (
           <img
-            src={optimizeImage(product.images[0].url, { width: 600 })}
+            src={optimizeImage(product.images[0].url)}
             alt={product.name}
-            loading="lazy"
             style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
           />
         ) : (

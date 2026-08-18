@@ -270,7 +270,7 @@ export default function About() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => setLightbox(optimizeImage(src, { width: 1200 }))}
+              onClick={() => setLightbox(optimizeImage(src))}
               aria-label={`Open gallery image ${i + 1}`}
               style={{
                 border: "none",
@@ -281,7 +281,7 @@ export default function About() {
                 position: "relative",
               }}
             >
-              <img src={optimizeImage(src, { width: 600 })} alt={`Pratha gallery ${i + 1}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s ease" }} />
+              <img src={optimizeImage(src)} alt={`Pratha gallery ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform .5s ease" }} />
             </m.button>
           ))}
         </div>

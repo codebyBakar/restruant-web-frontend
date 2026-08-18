@@ -129,7 +129,17 @@ export default function Hero() {
   }
 
   useEffect(() => {
-    const handleScroll = () => applyProgress()
+    // Throttle scroll updates to one per animation frame so the heavy
+    // hero animation never recomputes more than ~60x/sec on mobile.
+    let ticking = false
+    const handleScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        applyProgress()
+        ticking = false
+      })
+    }
     window.addEventListener('scroll', handleScroll, { passive: true })
     applyProgress()
     return () => window.removeEventListener('scroll', handleScroll)
@@ -152,23 +162,34 @@ export default function Hero() {
     return () => cancelAnimationFrame(rafId)
   }, [])
 
+  // 4K video is heavy — don't even start downloading it until the user has
+  // scrolled near the point where it becomes visible (progress > 0.6).
+  const videoStarted = useRef(false)
   useEffect(() => {
     const video = videoRef.current
-    if (!video) return
+    if (!video || videoStarted.current) return
+    if (progress < 0.6) return
+    videoStarted.current = true
     const tryPlay = () => {
       video.play().catch(() => {})
     }
+    video.load()
     tryPlay()
-    const onLoaded = () => tryPlay()
-    video.addEventListener("loadeddata", onLoaded)
-    return () => video.removeEventListener("loadeddata", onLoaded)
-  }, [])
+    video.addEventListener("loadeddata", tryPlay)
+    return () => video.removeEventListener("loadeddata", tryPlay)
+  }, [progress])
 
   const ep = easeInOut(progress)
   const entranceEp = easeInOut(loadProgress)
   const displayT = loadProgress < 1 ? (1 - entranceEp) : ep
 
-  const vw = window.innerWidth
+  // Read viewport size once into state (avoids a layout reflow on every render)
+  const [vw, setVw] = useState(typeof window !== 'undefined' ? window.innerWidth : 1280)
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
   const isMobile = vw < 640
   const mobileScale = isMobile ? Math.min(0.65, vw / 500) : 1
 
@@ -376,6 +397,7 @@ export default function Hero() {
             </div>
 
             {/* â”€â”€ Video background (appears with headline) â”€â”€ */}
+            {/* Loaded lazily (only when scrolled near) so it never slows the hero animation. */}
             <div
               style={{
                 position: 'absolute',
@@ -391,7 +413,8 @@ export default function Hero() {
                 loop
                 muted
                 playsInline
-                preload="auto"
+                preload="none"
+                poster="/images/home-restaurant.jpg"
                 style={{
                   width: '100%',
                   height: '100%',

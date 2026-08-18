@@ -68,7 +68,7 @@ export default function Deals() {
             >
               {deal.image?.url ? (
                 <div style={{ aspectRatio: "16/9", overflow: "hidden", background: "var(--cream-2)" }}>
-                  <img src={optimizeImage(deal.image.url, { width: 800 })} alt={deal.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={optimizeImage(deal.image.url)} alt={deal.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
               ) : (
                 <div style={{ aspectRatio: "16/9", background: "var(--cream-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-soft)", fontSize: 13 }}>

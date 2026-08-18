@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Truck, ShoppingBag, Bank, Money, X } from "phosphor-react";
+import { Truck, ShoppingBag, Bank, Money, X, UploadSimple, Image, CheckCircle } from "phosphor-react";
 import { useCart } from "../context/CartContext.jsx";
 import { useSettings } from "../hooks/useSettings.js";
 import { useStoreStatus } from "../hooks/useStoreStatus.js";
@@ -26,6 +26,7 @@ export default function Checkout() {
   const [showOnlineModal, setShowOnlineModal] = useState(false);
   const [screenshot, setScreenshot] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [modalError, setModalError] = useState("");
 
   useEffect(() => {
     if (items.length === 0 && !hasNavigated.current) {
@@ -85,6 +86,7 @@ export default function Checkout() {
     if (!validateForm()) return;
 
     if (paymentMethod === "online") {
+      setModalError("");
       setShowOnlineModal(true);
       return;
     }
@@ -101,7 +103,8 @@ export default function Checkout() {
       });
       clearCart();
       hasNavigated.current = true;
-      navigate(`/order-success/${data.data.orderNumber}?token=${data.data.accessToken}&payment=${paymentMethod}`);
+      sessionStorage.setItem("pendingOrder", JSON.stringify({ orderNumber: data.data.orderNumber, token: data.data.accessToken, payment: paymentMethod }));
+      navigate("/order-success");
     } catch (err) {
       toast.error(err.response?.data?.message || "Could not place order");
     } finally {
@@ -113,8 +116,9 @@ export default function Checkout() {
   const handleUploadScreenshot = async (e) => {
     e.preventDefault();
     if (uploadingRef.current) return;
+    setModalError("");
     if (!screenshot) {
-      toast.error("Please select a payment screenshot");
+      setModalError("Please select a payment screenshot");
       return;
     }
     uploadingRef.current = true;
@@ -131,9 +135,10 @@ export default function Checkout() {
       toast.success("Order placed! Awaiting payment verification.");
       clearCart();
       hasNavigated.current = true;
-      navigate(`/order-success/${data.data.orderNumber}?token=${data.data.accessToken}&payment=online`);
+      sessionStorage.setItem("pendingOrder", JSON.stringify({ orderNumber: data.data.orderNumber, token: data.data.accessToken, payment: "online" }));
+      navigate("/order-success");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Order could not be placed");
+      setModalError(err.response?.data?.message || "Order could not be placed");
     } finally {
       uploadingRef.current = false;
       setUploading(false);
@@ -144,7 +149,7 @@ export default function Checkout() {
 
   return (
     <>
-      <div className="container checkout-page" style={{ padding: "40px 24px 90px", display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 40 }} id="checkout-grid">
+      <div className="container checkout-page" style={{ padding: "40px 24px 90px", paddingBottom: "calc(90px + env(safe-area-inset-bottom, 0px))", display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 40 }} id="checkout-grid">
         <div>
           <h1 style={{ fontSize: "clamp(26px,3.4vw,36px)", marginBottom: 26 }}>Checkout</h1>
 
@@ -196,7 +201,7 @@ export default function Checkout() {
                 <div><strong>Account No.:</strong> {settings?.bankAccountNumber || "—"}</div>
                 <div><strong>IBAN:</strong> {settings?.bankIBAN || "—"}</div>
                 <div style={{ marginTop: 8, fontSize: 12, color: "var(--ink-soft)" }}>
-                  Your order is created only after you submit the payment screenshot.
+                  Your order is created only after you submit the payment receipt or bank transfer screenshot.
                 </div>
               </div>
             )}
@@ -210,7 +215,7 @@ export default function Checkout() {
             {items.map((item) => (
               <div key={item.lineKey} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
                 <span style={{ color: "var(--ink-soft)" }}>
-                  {item.quantity}x {item.name} {item.variantLabel && `(${item.variantLabel})`}
+                  {item.quantity}x {item.name} {item.variantLabel && <span>({item.variantLabel})</span>}
                   {item.dealId && <span style={{ fontSize: 11, display: "block", color: "var(--paprika)" }}>Combo deal</span>}
                 </span>
                 <span style={{ fontWeight: 700 }}>{formatPKR(item.unitPrice * item.quantity)}</span>
@@ -228,7 +233,7 @@ export default function Checkout() {
           </div>
 
           <button
-            className="btn btn-primary"
+            className="btn btn-primary checkout-place-btn"
             style={{ width: "100%", height: 50, marginTop: 20, opacity: canPlace ? 1 : 0.5, cursor: canPlace ? "pointer" : "not-allowed" }}
             onClick={placeOrder}
             disabled={placing || placingRef.current || !canPlace}
@@ -247,11 +252,52 @@ export default function Checkout() {
           )}
         </aside>
 
+        {/* Mobile fixed bottom bar */}
+        <div className="checkout-mobile-bar">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ minWidth: 0,display:'flex', alignItems:'center', flexDirection:'column', textAlign:'center' }}>
+              <div style={{ fontSize: 11, color: "var(--ink-soft)", fontWeight: 600 }}>Total</div>
+              <div style={{ fontWeight: 800, fontSize: 18, color: "var(--paprika)" }}>{formatPKR(estTotal)}</div>
+            </div>
+            <button
+              className="btn btn-primary"
+              style={{ flex: 1, height: 48, opacity: canPlace ? 1 : 0.5, cursor: canPlace ? "pointer" : "not-allowed" }}
+              onClick={placeOrder}
+              disabled={placing || placingRef.current || !canPlace}
+            >
+              {placing ? "Please wait..." : isOpen ? "Place Order" : "Closed"}
+            </button>
+          </div>
+        </div>
+
          <style>{`
-           @media (max-width: 860px) { .checkout-page { padding-top: 150px !important; } }
+           @media (max-width: 860px) { .checkout-page { padding-top: 150px !important; padding-bottom: 100px !important; } }
            .form-input { width: 100%; padding: 11px 14px; border-radius: 11px; border: 1.5px solid var(--line); font-family: inherit; font-size: 14px; background: #fff; }
            @media (max-width: 900px) {
              #checkout-grid { grid-template-columns: 1fr !important; }
+           }
+           /* Hide the Place Order button inside summary sidebar on mobile */
+           @media (max-width: 860px) {
+             .checkout-place-btn { display: none !important; }
+           }
+           /* Mobile fixed bottom bar — hidden on desktop */
+           .checkout-mobile-bar {
+             display: none;
+           }
+           @media (max-width: 860px) {
+             .checkout-mobile-bar {
+               display: block;
+               position: fixed;
+               bottom: 0;
+               left: 0;
+               right: 0;
+               z-index: 99;
+               background: #fff;
+               border-top: 1px solid var(--line);
+               padding: 12px 20px;
+               padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+               box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+             }
            }
          `}</style>
       </div>
@@ -291,15 +337,69 @@ export default function Checkout() {
 
             <form onSubmit={handleUploadScreenshot}>
               <label style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 8 }}>
-                Upload Payment Screenshot
+                Upload Payment Receipt or Bank Transfer Screenshot
               </label>
-              <input
-                type="file"
-                accept="image/*"
-                required
-                onChange={(e) => setScreenshot(e.target.files[0])}
-                style={{ display: "block", marginBottom: 16, fontSize: 13, width: "100%" }}
-              />
+
+              {/* Styled upload zone */}
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  padding: screenshot ? "16px" : "32px 20px",
+                  borderRadius: 16,
+                  border: `2px dashed ${screenshot ? "#4caf50" : "var(--line)"}`,
+                  background: screenshot ? "#e8f5e9" : "#fafafa",
+                  cursor: "pointer",
+                  transition: "all .2s ease",
+                  marginBottom: 16,
+                }}
+              >
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  required
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file && file.size > 5 * 1024 * 1024) {
+                      toast.error("File is too large. Maximum size is 5MB.");
+                      e.target.value = "";
+                      return;
+                    }
+                    setScreenshot(file);
+                  }}
+                  style={{ display: "none" }}
+                />
+                {screenshot ? (
+                  <>
+                    <CheckCircle size={28} color="#4caf50" weight="fill" />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#2e7d32" }}>{screenshot.name}</span>
+                    <span style={{ fontSize: 11.5, color: "#558b2f" }}>
+                      {""}{(screenshot.size / 1024 / 1024).toFixed(2)} MB • Tap to change
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(194,65,12,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <UploadSimple size={24} color="var(--paprika)" weight="bold" />
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Tap to upload</span>
+                    <span style={{ fontSize: 12, color: "var(--ink-soft)", textAlign: "center", lineHeight: 1.4 }}>
+                      Take your payment receipt or bank transfer screenshot<br />and upload it here
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 4 }}>
+                      PNG, JPG or WebP • Max 5MB
+                    </span>
+                  </>
+                )}
+              </label>
+              {modalError && (
+                <div style={{ marginBottom: 14, padding: "12px 16px", borderRadius: 12, background: "#fdecea", border: "1px solid #f3c1bb", color: "#c0392b", fontSize: 13, fontWeight: 600, lineHeight: 1.5 }}>
+                  {modalError}
+                </div>
+              )}
               <button
                 type="submit"
                 className="btn btn-primary"

@@ -21,6 +21,7 @@ createRoot(document.getElementById("root")).render(
             <App />
             <Toaster
               position="top-center"
+              containerStyle={{ zIndex: 999999 }}
               toastOptions={{
                 style: {
                   background: "#211711",

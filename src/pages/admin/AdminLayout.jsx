@@ -15,6 +15,7 @@ import {
 } from "phosphor-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useSettings } from "../../hooks/useSettings.js";
+import { logoImage } from "../../utils/cloudinary.js";
 import NotificationBell from "../../components/admin/NotificationBell.jsx";
 import NotificationDrawer from "../../components/admin/NotificationDrawer.jsx";
 import "../../components/admin/admin.css";
@@ -47,7 +48,7 @@ export default function AdminLayout() {
           <div className="admin-sidebar-brand" style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <img
               className="admin-sidebar-logo"
-              src={settings?.logo?.url || "/nav-logo.png"}
+              src={logoImage(settings?.logo?.url) }
               alt={settings?.siteName || "Paratha Chai"}
             />
           </div>

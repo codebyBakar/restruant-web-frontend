@@ -4,6 +4,7 @@ import { ShoppingBag, List, X } from "phosphor-react";
 import { useCart } from "../context/CartContext.jsx";
 import { useUI } from "../context/UIContext.jsx";
 import { useSettings } from "../hooks/useSettings.js";
+import { logoImage } from "../utils/cloudinary.js";
 
 const allLinks = [
   { to: "/", label: "Home" },
@@ -19,8 +20,9 @@ export default function Navbar() {
   const { openCart } = useUI();
   const { settings } = useSettings();
   const siteName = settings?.siteName || "Pratha";
-  // Logo is shown at its original uploaded quality — no resizing/transforms that could blur it.
-  const logoUrl = settings?.logo?.url || "/nav-logo.png";
+  // Logo: downscaled-only (c_limit) so it's never blurry, but big uploads get
+  // compressed to WebP so they load instantly instead of rendering "kat kat".
+  const logoUrl = logoImage(settings?.logo?.url) ;
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -253,7 +255,7 @@ export default function Navbar() {
           text-align: center;
           width: 100%;
           max-width: 400px;
-          margin-top: 25px;
+          margin-top: 40px;
         }
         .drawer__link {
           font-size: 36px;

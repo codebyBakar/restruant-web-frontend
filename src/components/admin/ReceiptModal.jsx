@@ -1,6 +1,7 @@
 import { Printer, X } from "phosphor-react";
 import { getSettings } from "../../utils/settingsStore.js";
 import { getCurrency } from "../../utils/currency.js";
+import { logoImage } from "../../utils/cloudinary.js";
 
 export default function ReceiptModal({ order, show, onClose }) {
   if (!order || !show) return null;
@@ -8,7 +9,7 @@ export default function ReceiptModal({ order, show, onClose }) {
   const settings = getSettings() || {};
   const currency = getCurrency() || "Rs.";
   // Logo keeps its original uploaded quality — no transforms that could blur it.
-  const logo = settings.logo?.url || "";
+  const logo = logoImage(settings.logo?.url) || "";
   const siteName = settings.siteName || "Pratha";
   const address = settings.address || "";
   const phone = settings.phone || "";
@@ -36,7 +37,7 @@ export default function ReceiptModal({ order, show, onClose }) {
           <div className="receipt-sheet__content">
             {logo && (
               <div style={{ textAlign: "center", marginBottom: 6 }}>
-                <img src={logo} alt={siteName} style={{ maxWidth: 90, maxHeight: 50, objectFit: "contain" }} />
+                <img src={logo} alt={siteName} style={{ maxWidth: 90, maxHeight: 50, objectFit: "contain", display: "block", margin: "0 auto" }} />
               </div>
             )}
             <div className="receipt-h1">{siteName}</div>

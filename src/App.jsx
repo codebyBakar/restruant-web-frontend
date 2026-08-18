@@ -79,7 +79,7 @@ export default function App() {
         <Route path="/menu" element={<SiteLayout><RouteFallback><Menu /></RouteFallback></SiteLayout>} />
         <Route path="/deals" element={<SiteLayout><RouteFallback><Deals /></RouteFallback></SiteLayout>} />
         <Route path="/checkout" element={<SiteLayout><RequireCart><RouteFallback><Checkout /></RouteFallback></RequireCart></SiteLayout>} />
-        <Route path="/order-success/:orderNumber" element={<SiteLayout><RequireEmail><RouteFallback><OrderSuccess /></RouteFallback></RequireEmail></SiteLayout>} />
+        <Route path="/order-success" element={<SiteLayout><RouteFallback><OrderSuccess /></RouteFallback></SiteLayout>} />
         <Route path="/track" element={<SiteLayout><RouteFallback><MyActivity /></RouteFallback></SiteLayout>} />
         <Route path="/about" element={<SiteLayout><RouteFallback><About /></RouteFallback></SiteLayout>} />
         <Route path="/contact" element={<SiteLayout><RouteFallback><Contact /></RouteFallback></SiteLayout>} />
