@@ -72,9 +72,9 @@ export default function Contact() {
   return (
     <div className="container" style={{ padding: "150px 24px 90px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 50 }} id="contact-grid">
       <div>
-        <div className="eyebrow" style={{ marginBottom: 10 }}>Get in touch</div>
-        <h1 style={{ fontSize: "clamp(28px,3.6vw,40px)", marginBottom: 24 }}>We'd love to hear from you</h1>
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>Get in touch</div>
+        <h1 style={{ fontSize: "clamp(24px,3vw,32px)", marginBottom: 16 }}>We'd love to hear from you</h1>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ContactItem icon={<MapPin size={20} />} label="Address" value={settings?.address || "MM Alam Road, Gulberg III, Lahore"} />
           <ContactItem icon={<Phone size={20} />} label="Phone" value={settings?.phone || "+92 300 1234567"} />
           <ContactItem icon={<Envelope size={20} />} label="Email" value={settings?.email || "hello@pratha.com"} />
@@ -82,30 +82,34 @@ export default function Contact() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 22, padding: 28, display: "flex", flexDirection: "column", gap: 14, height: "fit-content" }}>
+      <form onSubmit={handleSubmit} noValidate style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 22, padding: 20, display: "flex", flexDirection: "column", gap: 8, height: "fit-content" }}>
         <div aria-hidden="true" style={{ display: "none" }}>
           <label htmlFor="website" tabIndex={-1}>Website</label>
           <input id="website" type="text" name="website" autoComplete="off" tabIndex={-1} value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
         </div>
-        <input required placeholder=" Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="form-input" />
-        <input required type="email" placeholder=" email Address" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="form-input" />
-        <input required type="tel" placeholder="Your phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="form-input" />
-        <textarea required rows={5} placeholder="Your message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="form-input" />
-        <button type="submit" className="btn btn-primary" style={{ height: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }} disabled={sending}>
+        <label className="form-label">Full Name</label>
+        <input required placeholder="Enter your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="form-input" />
+        <label className="form-label">Email Address</label>
+        <input required type="email" placeholder="Enter your email address" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="form-input" />
+        <label className="form-label">Phone Number</label>
+        <input required type="number" placeholder="Enter your phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="form-input" pattern="[0-9+\-() ]*" />
+        <label className="form-label">Message</label>
+        <textarea required rows={3} placeholder="Write your message here..." value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="form-input" />
+        <button type="submit" className="btn btn-primary" style={{ height: 42, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }} disabled={sending}>
           <PaperPlaneTilt size={18} />
           {sending ? "Sending..." : "Send Message"}
         </button>
       </form>
 
-      <div style={{ gridColumn: "1 / -1", marginTop: 20 }}>
+      <div style={{ gridColumn: "1 / -1", marginTop: 10 }}>
         <div className="eyebrow" style={{ marginBottom: 10 }}>Find us</div>
-        <h2 style={{ fontSize: "clamp(22px,2.6vw,30px)", marginBottom: 20 }}>Our Location</h2>
+        <h2 style={{ fontSize: "clamp(20px,2.4vw,26px)", marginBottom: 12 }}>Our Location</h2>
         <div style={{ borderRadius: 22, overflow: "hidden", border: "1px solid var(--line)", boxShadow: "var(--shadow)" }}>
           <iframe
             title="Pratha location"
             src="https://maps.google.com/maps?q=9%20Blacker%20Road%2C%20Huddersfield%2C%20HD1%205HU&t=&z=16&ie=UTF8&iwloc=&output=embed"
             width="100%"
-            height="420"
+            height="300"
             style={{ border: 0, display: "block" }}
             allowFullScreen
             loading="lazy"
@@ -116,8 +120,12 @@ export default function Contact() {
       </div>
 
       <style>{`
-        .form-input { padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--line); font-family: inherit; font-size: 14px; background: #fff; }
+        .form-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 0; }
+        .form-input { padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--line); font-family: inherit; font-size: 13px; background: #fff; }
         .form-input:focus { outline: none; border-color: var(--paprika); }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width: 800px) { #contact-grid { grid-template-columns: 1fr !important; } }
       `}</style>

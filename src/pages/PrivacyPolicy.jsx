@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
           <p>We collect information you provide directly to us, including:</p>
           <ul style={{ margin: "8px 0 0", paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
             <li><strong>Order details</strong> — your name, phone number, email address, delivery address and order contents, needed to process and deliver your order.</li>
-            <li><strong>Payment information</strong> — payment method and (for online bank transfers) the payment screenshot you upload to confirm your order.</li>
+            <li><strong>Payment information</strong> — payment method and (for online bank transfers) the paid payment receipt you upload to confirm your order.</li>
             <li><strong>Reservation details</strong> — name, phone and party size when you reserve a table.</li>
             <li><strong>Contact form submissions</strong> — your name, email, phone and message when you contact us.</li>
           </ul>

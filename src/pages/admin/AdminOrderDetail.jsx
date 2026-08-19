@@ -186,10 +186,10 @@ export default function AdminOrderDetail() {
             </select>
             {order.paymentMethod === "online" && order.paymentScreenshot?.url && (
               <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Payment Screenshot</div>
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Paid Payment receipt</div>
                 <img
                   src={optimizeImage(order.paymentScreenshot.url, { width: 800 })}
-                  alt="Payment Screenshot"
+                  alt="Paid Payment receipt"
                   onClick={() => setLightbox(optimizeImage(order.paymentScreenshot.url, { width: 1200 }))}
                   loading="lazy"
                   style={{ width: "100%", maxHeight: 260, objectFit: "contain", borderRadius: 10, border: "1px solid var(--line)", background: "#fafafa", cursor: "pointer" }}

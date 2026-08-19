@@ -348,7 +348,7 @@ export default function MyActivity() {
         <div className="eyebrow" style={{ marginBottom: 6 }}>Track your order</div>
         <h1 style={{ fontSize: "clamp(26px, 5vw, 40px)", margin: 0 }}>Track</h1>
         <p style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 8, maxWidth: 520, margin: "8px auto 0", lineHeight: 1.5, padding: "0 8px" }}>
-          Enter your order number to see real-time status. You can find it in your order confirmation email, WhatsApp message, or receipt.
+          Enter your order number to see real-time status. You can find it in your order confirmation email and order success receipt.
         </p>
       </div>
 

@@ -118,7 +118,7 @@ export default function Checkout() {
     if (uploadingRef.current) return;
     setModalError("");
     if (!screenshot) {
-      setModalError("Please select a payment screenshot");
+      setModalError("Please select a paid payment receipt");
       return;
     }
     uploadingRef.current = true;
@@ -171,9 +171,9 @@ export default function Checkout() {
           <Section title="Contact Details">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <input className="form-input" placeholder="Full name" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} />
-              <input className="form-input" placeholder="Phone number" value={customer.phone} onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} />
+              <input className="form-input" type="number" placeholder="Phone number" value={customer.phone} onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} />
             </div>
-            <input className="form-input" style={{ marginTop: 12 }} placeholder="Email address" type="email" value={customer.email} onChange={(e) => setCustomer({ ...customer, email: e.target.value })} />
+            <input className="form-input" style={{ marginTop: 12 }} placeholder="Your Email " type="email" value={customer.email} onChange={(e) => setCustomer({ ...customer, email: e.target.value })} />
           </Section>
 
           {orderType === "delivery" && (
@@ -201,7 +201,7 @@ export default function Checkout() {
                 <div><strong>Account No.:</strong> {settings?.bankAccountNumber || "—"}</div>
                 <div><strong>IBAN:</strong> {settings?.bankIBAN || "—"}</div>
                 <div style={{ marginTop: 8, fontSize: 12, color: "var(--ink-soft)" }}>
-                  Your order is created only after you submit the payment receipt or bank transfer screenshot.
+                  Your order is created only after you submit the paid payment receipt .
                 </div>
               </div>
             )}
@@ -273,6 +273,9 @@ export default function Checkout() {
          <style>{`
            @media (max-width: 860px) { .checkout-page { padding-top: 150px !important; padding-bottom: 100px !important; } }
            .form-input { width: 100%; padding: 11px 14px; border-radius: 11px; border: 1.5px solid var(--line); font-family: inherit; font-size: 14px; background: #fff; }
+           input[type="number"]::-webkit-outer-spin-button,
+           input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+           input[type="number"] { -moz-appearance: textfield; }
            @media (max-width: 900px) {
              #checkout-grid { grid-template-columns: 1fr !important; }
            }
