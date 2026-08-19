@@ -19,7 +19,7 @@ export default function Navbar() {
   const { itemCount } = useCart();
   const { openCart } = useUI();
   const { settings } = useSettings();
-  const siteName = settings?.siteName || "Pratha";
+  const siteName = settings?.siteName || "Paratha Chai";
   // Logo: downscaled-only (c_limit) so it's never blurry, but big uploads get
   // compressed to WebP so they load instantly instead of rendering "kat kat".
   const logoUrl = logoImage(settings?.logo?.url) ;

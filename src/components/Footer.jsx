@@ -11,7 +11,7 @@ export default function Footer() {
       <div className="footer-grid" style={{ padding: "56px 24px 30px", display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr 1.2fr", gap: 36 }}>
         <div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 12 }}>
-            {settings?.siteName || "Pratha"}
+            {settings?.siteName || "Paratha Chai"}
           </div>
           <p style={{ color: "rgba(251,243,230,0.65)", fontSize: 14.5, lineHeight: 1.7, maxWidth: 280 }}>
             {settings?.tagline || "Authentic parathas, rolls and combos - rolled fresh, delivered hot."}
