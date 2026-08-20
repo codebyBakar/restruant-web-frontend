@@ -37,10 +37,12 @@ export default function Footer() {
         <div>
           <div style={{ fontWeight: 700, marginBottom: 14, fontSize: 13.5, letterSpacing: ".04em", color: "var(--turmeric)" }}>VISIT US</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 14, color: "rgba(251,243,230,0.8)" }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <MapPin size={17} style={{ flexShrink: 0, marginTop: 2 }} />
-              <span>{settings?.address || "MM Alam Road, Gulberg III, Lahore"}</span>
-            </div>
+            {settings?.address && (
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <MapPin size={17} style={{ flexShrink: 0, marginTop: 2 }} />
+                <span>{settings.address}</span>
+              </div>
+            )}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <Phone size={17} />
               <span>{settings?.phone || "+92 300 1234567"}</span>

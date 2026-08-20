@@ -61,17 +61,62 @@ export function storeClosedMessage(settings, fallback = "We're currently closed.
   return `We're currently closed. Opening hours: ${to12h(openTime)} - ${to12h(closeTime)}`;
 }
 
-export const STORE_TIMEZONES = [
-  { value: "Asia/Karachi", label: "Pakistan (Asia/Karachi)" },
-  { value: "Asia/Kolkata", label: "India (Asia/Kolkata)" },
-  { value: "Asia/Dubai", label: "UAE (Asia/Dubai)" },
-  { value: "Asia/Riyadh", label: "Saudi Arabia (Asia/Riyadh)" },
-  { value: "Europe/London", label: "UK (Europe/London)" },
-  { value: "Europe/Berlin", label: "Germany (Europe/Berlin)" },
-  { value: "Europe/Paris", label: "France (Europe/Paris)" },
-  { value: "America/New_York", label: "USA East (America/New_York)" },
-  { value: "America/Chicago", label: "USA Central (America/Chicago)" },
-  { value: "America/Los_Angeles", label: "USA West (America/Los_Angeles)" },
-  { value: "America/Toronto", label: "Canada (America/Toronto)" },
-  { value: "Australia/Sydney", label: "Australia (Australia/Sydney)" },
-];
+const CURRENCY_CODE_BY_SYMBOL = {
+  "Rs.": "PKR",
+  $: "USD",
+  "£": "GBP",
+  "€": "EUR",
+  "₹": "INR",
+  AED: "AED",
+  SAR: "SAR",
+};
+
+const CURRENCY_COUNTRIES = {
+  PKR: [{ value: "Asia/Karachi", country: "Pakistan", tz: "PKT · GMT+5" }],
+  USD: [{ value: "America/New_York", country: "United States", tz: "ET · GMT-5" }],
+  GBP: [{ value: "Europe/London", country: "United Kingdom", tz: "GMT / BST" }],
+  EUR: [
+    { value: "Europe/Berlin", country: "Germany", tz: "CET · GMT+1" },
+    { value: "Europe/Paris", country: "France", tz: "CET · GMT+1" },
+    { value: "Europe/Rome", country: "Italy", tz: "CET · GMT+1" },
+    { value: "Europe/Madrid", country: "Spain", tz: "CET · GMT+1" },
+    { value: "Europe/Amsterdam", country: "Netherlands", tz: "CET · GMT+1" },
+    { value: "Europe/Brussels", country: "Belgium", tz: "CET · GMT+1" },
+    { value: "Europe/Dublin", country: "Ireland", tz: "GMT · GMT+0" },
+    { value: "Europe/Lisbon", country: "Portugal", tz: "WET · GMT+0" },
+    { value: "Europe/Vienna", country: "Austria", tz: "CET · GMT+1" },
+    { value: "Europe/Athens", country: "Greece", tz: "EET · GMT+2" },
+    { value: "Europe/Helsinki", country: "Finland", tz: "EET · GMT+2" },
+    { value: "Europe/Warsaw", country: "Poland", tz: "CET · GMT+1" },
+    { value: "Europe/Prague", country: "Czechia", tz: "CET · GMT+1" },
+    { value: "Europe/Budapest", country: "Hungary", tz: "CET · GMT+1" },
+    { value: "Europe/Luxembourg", country: "Luxembourg", tz: "CET · GMT+1" },
+    { value: "Europe/Stockholm", country: "Sweden", tz: "CET · GMT+1" },
+    { value: "Europe/Copenhagen", country: "Denmark", tz: "CET · GMT+1" },
+    { value: "Europe/Sofia", country: "Bulgaria", tz: "EET · GMT+2" },
+    { value: "Europe/Bucharest", country: "Romania", tz: "EET · GMT+2" },
+    { value: "Europe/Zagreb", country: "Croatia", tz: "CET · GMT+1" },
+    { value: "Europe/Bratislava", country: "Slovakia", tz: "CET · GMT+1" },
+    { value: "Europe/Ljubljana", country: "Slovenia", tz: "CET · GMT+1" },
+    { value: "Europe/Vilnius", country: "Lithuania", tz: "EET · GMT+2" },
+    { value: "Europe/Riga", country: "Latvia", tz: "EET · GMT+2" },
+    { value: "Europe/Tallinn", country: "Estonia", tz: "EET · GMT+2" },
+    { value: "Europe/Nicosia", country: "Cyprus", tz: "EET · GMT+2" },
+    { value: "Europe/Malta", country: "Malta", tz: "CET · GMT+1" },
+    { value: "Europe/Andorra", country: "Andorra", tz: "CET · GMT+1" },
+    { value: "Europe/Monaco", country: "Monaco", tz: "CET · GMT+1" },
+    { value: "Europe/San_Marino", country: "San Marino", tz: "CET · GMT+1" },
+  ],
+  INR: [{ value: "Asia/Kolkata", country: "India", tz: "IST · GMT+5:30" }],
+  AED: [{ value: "Asia/Dubai", country: "United Arab Emirates", tz: "GST · GMT+4" }],
+  SAR: [{ value: "Asia/Riyadh", country: "Saudi Arabia", tz: "AST · GMT+3" }],
+};
+
+// Countries available for store hours, filtered by the currency set in site settings.
+// Each country shows its overall standard timezone (not a city-specific zone).
+export function getTimezonesForCurrency(currencySymbol) {
+  const code = CURRENCY_CODE_BY_SYMBOL[currencySymbol];
+  const list = CURRENCY_COUNTRIES[code];
+  if (!list || !list.length) return [{ value: "Asia/Karachi", country: "Pakistan", tz: "PKT · GMT+5" }];
+  return list.map((c) => ({ value: c.value, label: `${c.country} (${c.tz})` }));
+}

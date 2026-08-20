@@ -414,7 +414,6 @@ export default function Hero() {
                 muted
                 playsInline
                 preload="none"
-                poster="/images/home-restaurant.jpg"
                 style={{
                   width: '100%',
                   height: '100%',

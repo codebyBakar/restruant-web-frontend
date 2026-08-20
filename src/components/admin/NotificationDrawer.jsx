@@ -1,18 +1,37 @@
+import { useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Bell, Check, ShoppingCart, X } from "phosphor-react";
+import { Bell, Check, ShoppingCart, Trash, X } from "phosphor-react";
 import { useNotification } from "../../context/NotificationContext.jsx";
+import ConfirmDialog from "../ConfirmDialog.jsx";
 import RelativeTime from "../RelativeTime.jsx";
 import { formatPKR } from "../../utils/format.js";
 
 export default function NotificationDrawer() {
-  const { notifications, unreadCount, drawerOpen, closeDrawer, markAllRead, markOrderSeen } = useNotification();
+  const {
+    notifications,
+    unreadCount,
+    drawerOpen,
+    closeDrawer,
+    markAllRead,
+    markOrderSeen,
+    deleteNotification,
+    deleteAllNotifications,
+  } = useNotification();
   const navigate = useNavigate();
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const openOrder = (n) => {
     markOrderSeen(n._id);
     closeDrawer();
     navigate(`/admin/orders/${n._id}`);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    if (pendingDelete.type === "all") deleteAllNotifications();
+    else deleteNotification(pendingDelete.id);
+    setPendingDelete(null);
   };
 
   return (
@@ -66,9 +85,10 @@ export default function NotificationDrawer() {
                 )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                {unreadCount > 0 && (
+                {notifications.length > 0 && (
                   <button
-                    onClick={markAllRead}
+                    onClick={() => setPendingDelete({ type: "all" })}
+                    aria-label="Delete all notifications"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -79,12 +99,13 @@ export default function NotificationDrawer() {
                       fontSize: 12.5,
                       fontWeight: 700,
                       padding: "4px 6px",
+                      cursor: "pointer",
                     }}
                   >
-                    <Check size={14} /> Mark all read
+                    <Trash size={14} /> Delete all
                   </button>
                 )}
-                <button onClick={closeDrawer} aria-label="Close notifications" style={{ background: "none", border: "none", padding: 4 }}>
+                <button onClick={closeDrawer} aria-label="Close notifications" style={{ background: "none", border: "none", padding: 4, cursor: "pointer" }}>
                   <X size={20} />
                 </button>
               </div>
@@ -113,18 +134,28 @@ export default function NotificationDrawer() {
             ) : (
               <div style={{ flex: 1, overflowY: "auto" }}>
                 {notifications.map((n) => (
-                  <button
+                  <div
                     key={n._id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => openOrder(n)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openOrder(n);
+                      }
+                    }}
+                    className={n.read ? "" : "notif-row-new"}
                     style={{
                       display: "flex",
                       width: "100%",
                       gap: 12,
+                      alignItems: "flex-start",
                       textAlign: "left",
-                      padding: "14px 20px",
+                      padding: "14px 12px 14px 20px",
                       border: "none",
                       borderBottom: "1px solid var(--line)",
-                      background: n.read ? "#fff" : "#fff4e8",
+                      background: n.read ? "#fff" : "#ffecec",
                       cursor: "pointer",
                     }}
                   >
@@ -155,34 +186,70 @@ export default function NotificationDrawer() {
                         <RelativeTime date={n.createdAt} />
                       </span>
                     </span>
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPendingDelete({ type: "single", id: n._id, label: n.orderNumber });
+                      }}
+                      aria-label={`Delete notification ${n.orderNumber}`}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 6,
+                        color: "var(--ink-soft)",
+                        cursor: "pointer",
+                        flexShrink: 0,
+                        borderRadius: 8,
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--paprika)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-soft)")}
+                    >
+                      <Trash size={16} />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
 
             <div style={{ padding: "14px 20px 18px", borderTop: "1px solid var(--line)" }}>
               <button
-                onClick={() => {
-                  closeDrawer();
-                  navigate("/admin/orders");
-                }}
+                onClick={markAllRead}
                 style={{
                   width: "100%",
-                  padding: "11px",
+                  padding: "12px",
                   borderRadius: 10,
-                  border: "1.5px solid var(--line)",
-                  background: "#fff",
-                  color: "var(--ink)",
+                  border: "none",
+                  background: "var(--paprika)",
+                  color: "#fff",
                   fontWeight: 700,
                   fontSize: 13.5,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 7,
                 }}
               >
-                View all orders
+                <Check size={16} weight="bold" /> Mark all read
               </button>
             </div>
           </m.aside>
         </>
       )}
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="Delete notification?"
+        message={
+          pendingDelete?.type === "all"
+            ? `Are you sure you want to delete all ${notifications.length} notifications? This cannot be undone.`
+            : `Delete notification for ${pendingDelete?.label || "this order"}? This cannot be undone.`
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        tone="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </AnimatePresence>
   );
 }

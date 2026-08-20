@@ -79,11 +79,11 @@ export default function Home() {
   }, []);
 
   const info = [
-    { icon: <MapPin size={18} />, label: "Find us", value: settings?.address || "MM Alam Road, Gulberg III, Lahore" },
+    { icon: <MapPin size={18} />, label: "Find us", value: settings?.address || "" },
     { icon: <Clock size={18} />, label: "Opening hours", value: settings?.openingHours || "11:00 AM - 12:00 AM, All Days" },
     { icon: <Phone size={18} />, label: "Call us", value: settings?.phone || "+92 300 1234567" },
     { icon: <Envelope size={18} />, label: "Write to us", value: settings?.email || "hello@pratha.com" },
-  ];
+  ].filter((it) => it.value);
 
   const socials = [
     { icon: <FacebookLogo size={18} />, href: settings?.socialLinks?.facebook || "#", label: "Facebook" },
@@ -92,9 +92,9 @@ export default function Home() {
   ];
 
   const facts = [
-    { label: "Minimum order", value: formatPKR(settings?.minOrderAmount || 300), icon: <Leaf size={16} /> },
-    { label: "Delivery fee", value: formatPKR(settings?.deliveryFee || 100), icon: <Truck size={16} /> },
-    { label: "Free delivery", value: `over ${formatPKR(settings?.freeDeliveryThreshold || 1500)}`, icon: <Sparkle size={16} /> },
+    { label: "Minimum order", value: formatPKR(settings?.minOrderAmount || 0), icon: <Leaf size={16} /> },
+    { label: "Delivery fee", value: formatPKR(settings?.deliveryFee || 0), icon: <Truck size={16} /> },
+    { label: "Free delivery", value: `over ${formatPKR(settings?.freeDeliveryThreshold || 0)}`, icon: <Sparkle size={16} /> },
   ];
 
     const isMobile = window.innerWidth < 689;
@@ -272,8 +272,10 @@ export default function Home() {
                 Come hungry, leave happy
               </h2>
               <p style={{ color: "rgba(251,243,230,0.65)", fontSize: 14.5, lineHeight: 1.75, marginBottom: 26, maxWidth: 440 }}>
-                Find us on {settings?.address?.split(",")[0] || "MM Alam Road"} — watch our chefs roll live at the
-                open counter, or order in. Seven days a week.
+                {settings?.address
+                  ? `Find us on ${settings.address.split(",")[0]}`
+                  : "Visit us in store"}
+                {" "}— watch our chefs roll live at the open counter, or order in. Seven days a week.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {info.map((it) => (

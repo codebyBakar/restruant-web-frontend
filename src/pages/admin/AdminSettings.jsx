@@ -8,7 +8,7 @@ import ImageLightbox from "../../components/ImageLightbox.jsx";
 import { useAdminAlert } from "../../components/admin/adminAlertContext.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { setCurrency } from "../../utils/currency.js";
-import { isStoreOpen, STORE_TIMEZONES } from "../../utils/storeStatus.js";
+import { isStoreOpen, getTimezonesForCurrency } from "../../utils/storeStatus.js";
 import { logoImage } from "../../utils/cloudinary.js";
 
 const CURRENCIES = [
@@ -87,6 +87,14 @@ export default function AdminSettings() {
   useEffect(() => {
     load();
   }, []);
+
+  // Keep the store-hours timezone valid for the currently selected currency.
+  useEffect(() => {
+    const opts = getTimezonesForCurrency(form.currency);
+    if (opts.length && !opts.some((o) => o.value === form.storeStatusTimezone)) {
+      setForm((f) => ({ ...f, storeStatusTimezone: opts[0].value }));
+    }
+  }, [form.currency, form.storeStatusTimezone]);
 
   useEffect(() => {
     setProfileForm((p) => ({ ...p, name: user?.name || "", email: user?.email || "" }));
@@ -315,7 +323,7 @@ export default function AdminSettings() {
               <div>
                 <label className="admin-label">Country / Timezone</label>
                 <select className="admin-input" value={form.storeStatusTimezone} onChange={(e) => handleChange("storeStatusTimezone", e.target.value)}>
-                  {STORE_TIMEZONES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  {getTimezonesForCurrency(form.currency).map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>

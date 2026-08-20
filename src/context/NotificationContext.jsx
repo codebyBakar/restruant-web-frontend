@@ -61,6 +61,15 @@ export function NotificationProvider({ children }) {
     setNotifications((prev) => (prev.some((n) => !n.read) ? prev.map((n) => ({ ...n, read: true })) : prev));
   }, []);
 
+  const deleteNotification = useCallback((id) => {
+    if (!id) return;
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
+  }, []);
+
+  const deleteAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
   const markOrderSeen = useCallback((orderId) => {
     if (!orderId) return;
     setSeenIds((prev) => {
@@ -78,8 +87,7 @@ export function NotificationProvider({ children }) {
 
   const openDrawer = useCallback(() => {
     setDrawerOpen(true);
-    markAllRead();
-  }, [markAllRead]);
+  }, []);
 
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
@@ -180,6 +188,8 @@ export function NotificationProvider({ children }) {
         closeDrawer,
         markAllRead,
         markOrderSeen,
+        deleteNotification,
+        deleteAllNotifications,
         isOrderNew,
       }}
     >

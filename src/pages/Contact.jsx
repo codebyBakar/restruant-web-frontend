@@ -12,6 +12,9 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "", website: "" });
   const [sending, setSending] = useState(false);
 
+  const mapAddress = settings?.address || "";
+  const mapSrc = mapAddress ? `https://maps.google.com/maps?q=${encodeURIComponent(mapAddress)}&t=&z=16&ie=UTF8&iwloc=&output=embed` : "";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -75,7 +78,7 @@ export default function Contact() {
         <div className="eyebrow" style={{ marginBottom: 8 }}>Get in touch</div>
         <h1 style={{ fontSize: "clamp(24px,3vw,32px)", marginBottom: 16 }}>We'd love to hear from you</h1>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <ContactItem icon={<MapPin size={20} />} label="Address" value={settings?.address || "MM Alam Road, Gulberg III, Lahore"} />
+          {settings?.address && <ContactItem icon={<MapPin size={20} />} label="Address" value={settings.address} />}
           <ContactItem icon={<Phone size={20} />} label="Phone" value={settings?.phone || "+92 300 1234567"} />
           <ContactItem icon={<Envelope size={20} />} label="Email" value={settings?.email || "hello@pratha.com"} />
           <ContactItem icon={<Clock size={20} />} label="Hours" value={settings?.openingHours || "11:00 AM - 12:00 AM, All Days"} />
@@ -101,23 +104,25 @@ export default function Contact() {
         </button>
       </form>
 
-      <div style={{ gridColumn: "1 / -1", marginTop: 10 }}>
-        <div className="eyebrow" style={{ marginBottom: 10 }}>Find us</div>
-        <h2 style={{ fontSize: "clamp(20px,2.4vw,26px)", marginBottom: 12 }}>Our Location</h2>
-        <div style={{ borderRadius: 22, overflow: "hidden", border: "1px solid var(--line)", boxShadow: "var(--shadow)" }}>
-          <iframe
-            title="Pratha location"
-            src="https://maps.google.com/maps?q=9%20Blacker%20Road%2C%20Huddersfield%2C%20HD1%205HU&t=&z=16&ie=UTF8&iwloc=&output=embed"
-            width="100%"
-            height="300"
-            style={{ border: 0, display: "block" }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-          />
+      {settings?.address && (
+        <div style={{ gridColumn: "1 / -1", marginTop: 10 }}>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>Find us</div>
+          <h2 style={{ fontSize: "clamp(20px,2.4vw,26px)", marginBottom: 12 }}>Our Location</h2>
+          <div style={{ borderRadius: 22, overflow: "hidden", border: "1px solid var(--line)", boxShadow: "var(--shadow)" }}>
+            <iframe
+              title="Pratha location"
+              src={mapSrc}
+              width="100%"
+              height="300"
+              style={{ border: 0, display: "block" }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         .form-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 0; }

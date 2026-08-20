@@ -71,11 +71,11 @@ export default function About() {
   ];
 
   const info = [
-    { icon: <MapPin size={18} />, label: "Find us", value: settings?.address || "MM Alam Road, Gulberg III, Lahore" },
+    { icon: <MapPin size={18} />, label: "Find us", value: settings?.address || "" },
     { icon: <Clock size={18} />, label: "Opening hours", value: settings?.openingHours || "11:00 AM - 12:00 AM, All Days" },
     { icon: <Phone size={18} />, label: "Call us", value: settings?.phone || "+92 300 1234567" },
     { icon: <Envelope size={18} />, label: "Write to us", value: settings?.email || "hello@pratha.com" },
-  ];
+  ].filter((it) => it.value);
 
   const socials = [
     { icon: <FacebookLogo size={18} />, href: settings?.socialLinks?.facebook || "#", label: "Facebook" },
